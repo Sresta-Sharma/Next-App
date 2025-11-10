@@ -1,65 +1,164 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+import { useState } from "react";
+import * as Yup from "yup";
+
+export default function Home(){
+  
+  // Store all the form inputs
+  const[formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    message: "", 
+  });
+
+  // To keep state of if the form has been submitted or not
+  const[formSubmitted, setFormSubmitted] = useState(false);
+
+  //To store validation errors
+  const[errors, setErrors] = useState<{[key: string]: string}>({});
+
+  //Define yup validation schema
+  const validationSchema = Yup.object().shape({
+    firstName: Yup.string().required("First name is required!").min(2, "First name must be at least 2 characters!"),
+    lastName: Yup.string().required("Last name is required!").min(2, "Last name must be at least 2 characters!"),
+    email: Yup.string().required("Email is required!").email("Invalid email address!"),
+    phone: Yup.string().required("Phone number is required!").matches(/^[0-9]{10}$/,"Phone number must be 10 digits!"),
+    message: Yup.string().required("Message is required!").min(10, "Message must be at least 10 characters long!"),
+  });
+
+  // Handles input change
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>){
+    const{ name, value } = e.target; //[e.target.name]: e.target.value
+    setFormData({ ...formData, [name]: value });
+  }
+
+  // Handles form submission
+  async function handleSubmit(e: React.FormEvent){
+    e.preventDefault();
+
+    try{
+      // Validate form data
+      await validationSchema.validate(formData, {abortEarly: false});
+      setErrors({}); //This clears the previous errors
+      setFormSubmitted(true);
+    }
+    catch(err: any){
+      // Collect validation errors
+      const newErrors: {[key: string]: string} = {};
+      err.inner.forEach((error: any) => {
+        newErrors[error.path] = error.message;
+      });
+      setErrors(newErrors);
+      setFormSubmitted(false);
+    }
+  }
+
+  return(
+    <main className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-8">
+      <h1 className="text-3xl font-bold mb-6">Contact Form</h1>
+
+      <form onSubmit={handleSubmit} noValidate
+            className="flex flex-col gap-4 bg-white p-6 rounded-xl shadow-md w-full max-w-sm"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+      {/* First Name */}
+      <label htmlFor="firstName" className="text-blue-800 font-medium">
+        First Name <span className="text-red-600">*</span>
+      </label>
+      <input 
+      id = "firstName"
+      name="firstName"
+      type="text"
+      placeholder="First Name"
+      value={formData.firstName}
+      onChange={handleChange}
+      className="border p-2 rounded"
+      // required
+      />
+      {errors.firstName && <p className="text-red-500 text-sm">{errors.firstName}</p>}
+
+      {/* Last Name */}
+      <label htmlFor="lastName" className="text-blue-800 font-medium">
+        Last Name <span className="text-red-600">*</span>
+      </label>
+      <input
+      id = "lastName"
+      name="lastName"
+      type="text"
+      placeholder="Last Name"
+      value={formData.lastName}
+      onChange={handleChange}
+      className="border p-2 rounded"
+      // required
+      />
+      {errors.lastName && <p className="text-red-500 text-sm">{errors.lastName}</p>}
+
+      {/* Email */}
+      <label htmlFor="email" className="text-blue-800 font-medium">
+        Email <span className="text-red-600">*</span>
+      </label>
+      <input
+      id = "email"
+      name="email"
+      type="email"
+      placeholder="Your Email"
+      value={formData.email}
+      onChange={handleChange}
+      className="border p-2 rounded"
+      // required
+      />
+      {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+
+      {/* Phone Number */}
+      <label htmlFor="phone" className="text-blue-800 font-medium">
+        Phone Number <span className="text-red-600">*</span>
+      </label>
+      <input
+      id = "phone"
+      name="phone"
+      type="tel"
+      placeholder="Phone Number"
+      value={formData.phone}
+      onChange={handleChange}
+      className="border p-2 rounded"
+      // required
+      />
+      {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
+
+      {/* Message */}
+      <label htmlFor="message" className="text-blue-800 font-medium">
+        Message <span className="text-red-600">*</span>
+      </label>
+      <textarea
+      id = "message"
+      name="message"
+      placeholder="Your Message"
+      value={formData.message}
+      onChange={handleChange}
+      className="border p-2 rounded"
+      // required
+      />
+      {errors.message && <p className="text-red-500 text-sm">{errors.message}</p>}
+
+      {/* Submit Button */}
+      <button
+      type="submit"
+      className="bg-blue-300 text-white p-2 rounded hover:bg-amber-500 transition">
+        Submit
+      </button>
+
+      </form>
+
+      {/* Success message after submission */}
+      {formSubmitted && (
+        <div className="mt-6 text-green-400 font-semibold">
+          Thankyou, {formData.firstName} {formData.lastName}! <br/>
+          Your message has been submitted successfully.
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      )}
+
+    </main>
   );
 }
