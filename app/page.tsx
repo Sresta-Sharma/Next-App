@@ -33,13 +33,26 @@ export default function Home(){
     email: Yup.string()
     .email("Invalid email address!"),
 
-    phone: Yup.string()
-    .matches(/^[0-9]{10}$/, "Phone number must be 10 digits!")
-    .when("email",{
-      is: (email: string | undefined) => !email || email.trim() === "",
-      then: (schema) => schema.required("Either email or phone number is required!"),
-      otherwise: (schema) => schema.notRequired(),
-    }),
+    phone: Yup.string().test(
+      "phone-or-email",
+      function (value) {
+        const { email } = this.parent;
+
+        if ((!value || value.trim() === "") && (!email || email.trim() === "")) {
+          return this.createError({
+            message: "Either email or phone number is required!",
+          });
+        }
+
+        if (value && value.trim() !== "" && !/^[0-9]{10}$/.test(value)) {
+          return this.createError({
+            message: "Phone number must be 10 digits!",
+          });
+        }
+
+        return true;
+      }
+    ),
 
     message: Yup.string()
     .notRequired()
