@@ -22,12 +22,40 @@ export default function Home(){
 
   //Define yup validation schema
   const validationSchema = Yup.object().shape({
-    firstName: Yup.string().required("First name is required!").min(2, "First name must be at least 2 characters!"),
-    lastName: Yup.string().required("Last name is required!").min(2, "Last name must be at least 2 characters!"),
-    email: Yup.string().required("Email is required!").email("Invalid email address!"),
-    phone: Yup.string().required("Phone number is required!").matches(/^[0-9]{10}$/,"Phone number must be 10 digits!"),
-    message: Yup.string().required("Message is required!").min(10, "Message must be at least 10 characters long!"),
+    firstName: Yup.string()
+    .required("First name is required!")
+    .min(2, "First name must be at least 2 characters!"),
+    
+    lastName: Yup.string()
+    .required("Last name is required!")
+    .min(2, "Last name must be at least 2 characters!"),
+    
+    email: Yup.string()
+    .email("Invalid email address!"),
+
+    phone: Yup.string()
+    .matches(/^[0-9]{10}$/, "Phone number must be 10 digits!")
+    .when("email",{
+      is: (email: string | undefined) => !email || email.trim() === "",
+      then: (schema) => schema.required("Either email or phone number is required!"),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+
+    message: Yup.string()
+    .notRequired()
+    .test(
+      "min-if-filled",
+      "Message must be at least 10 characters long!",
+      (value) => {
+        // if message is empty -> valid
+        if (!value || value.trim() === "") return true;
+
+        //if message has sth -> must be at least 10 characters
+        return value.trim().length >= 10;
+      }
+    ),
   });
+
 
   // Handles input change
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>){
@@ -113,7 +141,7 @@ export default function Home(){
 
       {/* Phone Number */}
       <label htmlFor="phone" className="text-blue-800 font-medium">
-        Phone Number <span className="text-red-600">*</span>
+        Phone Number 
       </label>
       <input
       id = "phone"
@@ -129,7 +157,7 @@ export default function Home(){
 
       {/* Message */}
       <label htmlFor="message" className="text-blue-800 font-medium">
-        Message <span className="text-red-600">*</span>
+        Message 
       </label>
       <textarea
       id = "message"
@@ -155,7 +183,7 @@ export default function Home(){
       {formSubmitted && (
         <div className="mt-6 text-green-400 font-semibold">
           Thankyou, {formData.firstName} {formData.lastName}! <br/>
-          Your message has been submitted successfully.
+          Your form has been submitted successfully.
         </div>
       )}
 
