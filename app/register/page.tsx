@@ -31,12 +31,48 @@ export default function RegisterForm() {
   const router = useRouter();
   
   // Function that runs on submit
-  const onSubmit: SubmitHandler<RegisterInputs> = (data) => {
-    alert(`Welcome, ${data.name}!`);
-    console.log("User data: ", data);
+  const onSubmit: SubmitHandler<RegisterInputs> = async (data) => {
+    
+    // Frontend confirmPassword check
+    if (data.password !== data.confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
 
-    // Redirect to login page
-    router.push("/login");
+    try{
+      
+      // Send user data to backend API
+      const response = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          password: data.password,
+        }),
+      });
+
+      const result = await response.json();
+
+      // API returned an error
+      if (!response.ok) {
+        alert(result.error || "Registration failed");
+        return;
+      }
+
+      // Success
+      alert("Registration successful!");
+      console.log("Backend response: ",result);
+
+      // Redirect to login page
+      router.push("/login");
+    } catch(err){
+      console.error("Registration error: ",err);
+      alert("Something went wrong. Please try again.");
+    }
   };
 
   return (
@@ -136,8 +172,9 @@ export default function RegisterForm() {
         </div>
 
         {/* Password field */}
-        <div style={{ marginBottom: "1rem", position: "relative" }}>
-          <input
+        <div style={{ marginBottom: "1.5rem" }}>
+          <div style={{ position: "relative", minHeight: "42px"}}>
+            <input
             type={showPassword ? "text" : "password"}
             placeholder="Password"
             {...register("password", {
@@ -151,29 +188,30 @@ export default function RegisterForm() {
             })}
             style={{
               width: "100%",
-              padding: "10px 12px",
+              padding: "10px 40px 10px 12px",
               borderRadius: "8px",
               border: errors.password ? "1px solid red" : "1px solid #ccc",
               outline: "none",
               fontSize: "15px",
             }}
           />
-          <button
-            type="button"
-            onClick={() => setShowPassword((prev) => !prev)}
-            style={{
-              position: "absolute",
-              right: "10px",
-              top: "8px",
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
-              color: "#555",
-              fontSize: "13px",
-            }}
-          >
-            {showPassword ? "Hide" : "Show"}
-          </button>
+          <span 
+          onClick={() => setShowPassword((prev) => !prev)}
+          style={{
+            position: "absolute",
+            right: "12px",
+            top: "50%",
+            transform: "translateY(-50%)",
+            fontSize: "13px",
+            color: "oklch(42.4% 0.199 265.638)",
+            fontWeight: "500",
+            cursor: "pointer",
+            userSelect: "none",
+          }}>
+            {showPassword ? "HIDE" : "SHOW"}
+          </span>
+          </div>
+
           {errors.password && (
             <p style={{ color: "red", fontSize: "13px", marginTop: "5px" }}>
               {errors.password.message}
@@ -182,8 +220,12 @@ export default function RegisterForm() {
         </div>
 
         {/* Confirm Password */}
-        <div style={{ marginBottom: "1rem", position: "relative" }}>
-          <input
+        <div style={{ marginBottom: "1.5rem" }}>
+          <div style={{
+            position: "relative",
+            minHeight: "42px"
+          }}>
+            <input
             type={showConfirm ? "text" : "password"}
             placeholder="Confirm Password"
             {...register("confirmPassword", {
@@ -193,29 +235,30 @@ export default function RegisterForm() {
             })}
             style={{
               width: "100%",
-              padding: "10px 12px",
+              padding: "10px 40px 10px 12px",
               borderRadius: "8px",
               border: errors.confirmPassword ? "1px solid red" : "1px solid #ccc",
               outline: "none",
               fontSize: "15px",
             }}
           />
-          <button
-            type="button"
-            onClick={() => setShowConfirm((prev) => !prev)}
-            style={{
-              position: "absolute",
-              right: "10px",
-              top: "8px",
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
-              color: "#555",
-              fontSize: "13px",
-            }}
-          >
-            {showConfirm ? "Hide" : "Show"}
-          </button>
+          <span 
+          onClick={() => setShowConfirm((prev) => !prev)}
+          style={{
+            position: "absolute",
+            right: "12px",
+            top: "50%",
+            transform: "translateY(-50%)",
+            fontSize: "13px",
+            color: "#007BFF",
+            fontWeight: "500",
+            cursor: "pointer",
+            userSelect: "none",
+          }}>
+            {showConfirm ? "HIDE" : "SHOW"}
+          </span>
+          </div>
+
           {errors.confirmPassword && (
             <p style={{ color: "red", fontSize: "13px", marginTop: "5px" }}>
               {errors.confirmPassword.message}
@@ -229,7 +272,7 @@ export default function RegisterForm() {
             marginTop: "10px",
             width: "100%",
             padding: "12px",
-            background: "linear-gradient(90deg, #007BFF, #0056D2)",
+            background: "oklch(42.4% 0.199 265.638)",
             color: "white",
             border: "none",
             borderRadius: "8px",
@@ -238,11 +281,25 @@ export default function RegisterForm() {
             fontWeight: "600",
             transition: "all 0.3s ease",
           }}
-          onMouseOver={(e) => (e.currentTarget.style.opacity = "0.9")}
-          onMouseOut={(e) => (e.currentTarget.style.opacity = "1")}
+          onMouseOver={(e) => (e.currentTarget.style.background = "oklch(48.8% 0.243 264.376)")}
+          onMouseOut={(e) => (e.currentTarget.style.background = "oklch(42.4% 0.199 265.638)")}
         >
           Register
         </button>
+        
+        <div style={{ marginTop: "1rem", textAlign: "center" }}>
+          <p style={{ fontSize: "14px", color: "#555" }}>
+            Already have an account? {" "}
+            <span onClick={() => router.push("/login")}
+            style={{
+              color: "oklch(42.4% 0.199 265.638)",
+              cursor: "pointer",
+              fontWeight: "600",
+            }}>
+              Login
+            </span>
+          </p>
+        </div>
       </form>
     </div>
   );

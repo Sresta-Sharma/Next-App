@@ -21,10 +21,40 @@ export default function LoginPage(){
     const [showPassword, setShowPassword] = useState(false);
 
     //When form is submitted
-    const onSubmit: SubmitHandler<LoginInputs> = (data) => {
-        alert(`Welcome back, ${data.email}!`);
-        console.log("Login data: ", data);
-        router.push("/dashboard");
+    const onSubmit: SubmitHandler<LoginInputs> = async (data) => {
+        try{
+            const response = await fetch("http://localhost:5000/api/auth/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email: data.email,
+                    password: data.password,
+                }),
+            });
+
+            const result = await response.json();
+
+            // If backend returned an error
+            if (!response.ok){
+                alert(result.error || "Login failed");
+                return;
+            }
+
+            // Save token in local storage
+            localStorage.setItem("token", result.token);
+
+            //Save user details to not later fetch from backend on every page
+            localStorage.setItem("user", JSON.stringify(result.user));
+            
+            alert("Login successful!");
+
+            router.push("/dashboard");
+        } catch(error){
+            console.error("Login error: ",error);
+            alert("Something went wrong. Try again!");
+        }
     };
 
     return(
@@ -79,7 +109,7 @@ export default function LoginPage(){
             </div>
 
             {/* Password */}
-            <div style={{ marginBottom: "1rem", position: "relative" }}>
+            <div style={{ marginBottom: "1.5rem", position: "relative" }}>
                 <input
                 type={showPassword ? "text": "password"}
                 placeholder="Password"
@@ -88,7 +118,7 @@ export default function LoginPage(){
                 })}
                 style={{
                     width: "100%",
-                    padding: "12px 14px",
+                    padding: "10px 40px 10px 12px",
                     borderRadius: "8px",
                     border: errors.password ? "1px solid red" : "1px solid #ccc",
                     outline: "none",
@@ -101,13 +131,16 @@ export default function LoginPage(){
                 onClick={() => setShowPassword((prev) => !prev)}
                 style={{
                     position: "absolute",
-                    right: "10px",
-                    top: "8px",
-                    background: "transparent",
-                    border: "none",
-                    cursor: "pointer",
-                    color: "#555",
+                    right: "12px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
                     fontSize: "13px",
+                    color: "oklch(42.4% 0.199 265.638)",
+                    fontWeight: "500",
+                    background: "transparent",
+                    cursor: "pointer",
+                    userSelect: "none",
+                    paddingLeft: "4px",
                 }}
                 >
                     {showPassword ? "Hide" : "Show"}
@@ -124,7 +157,7 @@ export default function LoginPage(){
                 marginTop: "10px",
                 width: "100%",
                 padding: "12px",
-                background: "#0070f3",
+                background: "oklch(42.4% 0.199 265.638)",
                 color: "white",
                 border: "none",
                 borderRadius: "8px",
@@ -133,32 +166,26 @@ export default function LoginPage(){
                 fontWeight: "500",
                 transition: "all 0.2s ease",
             }}
-            onMouseOver={(e) => (e.currentTarget.style.background = "#0059c1")}
-            onMouseOut={(e) => (e.currentTarget.style.background = "#0070f3")}
+            onMouseOver={(e) => (e.currentTarget.style.background = "oklch(48.8% 0.243 264.376)")}
+            onMouseOut={(e) => (e.currentTarget.style.background = "oklch(42.4% 0.199 265.638)")}
             >
                 Login
             </button>
 
             {/* Register Link */}
-            <p style={{
-                textAlign: "center",
-                marginTop: "1.2rem",
-                fontSize: "14px",
-                color: "#555",
-            }}
-            >
-                Don't have an account? {" "}
-                <a
-                href="/register"
-                style={{
-                    color: "#0070f3",
-                    textDecoration: "none",
-                    fontWeight: "500",
-                }}
-                >
-                    Register Here
-                </a>
-            </p>
+            <div style={{ marginTop: "1rem", textAlign: "center" }}>
+                <p style={{ fontSize: "14px", color: "#555" }}>
+                    Don't have an account? {" "}
+                    <span onClick={() => router.push("/register")}
+                    style={{
+                        color: "oklch(42.4% 0.199 265.638)",
+                        cursor: "pointer",
+                        fontWeight: "600",
+                    }}>
+                        Register
+                    </span>
+                </p>
+            </div>
             </form>   
         </div>
     );
