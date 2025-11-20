@@ -58,135 +58,85 @@ export default function LoginPage(){
     };
 
     return(
-        <div
-        style={{
-            maxWidth: "400px",
-            margin: "4rem auto",
-            padding: "2.5rem",
-            borderRadius: "15px",
-            boxShadow: "0 8px 25px rgba(0,0,0,0.1)",
-            background: "#ffffff",
-            fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-        }}
-        >
-            <h2
-            style={{
-                textAlign: "center",
-                color: "#333",
-                marginBottom: "1.5rem",
-                fontSize: "28px",
-                fontWeight: "600",
-            }}
-            >
-                Login
-            </h2>
+        <div className="max-w-[400px] mx-auto mt-16 p-10 rounded-[15px] shadow-[0_8px_25px_rgba(0,0,0,0.1)] bg-white font-[Segoe_UI]">
+      <h2 className="text-center text-[#222] mb-6 text-[1.6rem] font-bold">
+        Login
+      </h2>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
-            {/* Email */}
-            <div style={{ marginBottom: "1rem"}}>
-                <input
-                type="text"
-                placeholder="Email"
-                {...register("email", {
-                    required: "Email is required",
-                    pattern: {
-                        value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-                        message: "Invalid email format",
-                    },
-                })}
-                style={{
-                    width: "100%",
-                    padding: "12px 14px",
-                    borderRadius: "8px",
-                    border: errors.email ? "1px solid red" : "1px solid #ccc",
-                    outline: "none",
-                    fontSize: "15px",
-                    transition: "border 0.2s ease",
-                }}
-                />
-                {errors.email && <p style={{ color: "red", fontSize: "13px", marginTop: "5px" }}>
-                    {errors.email.message}</p>}
-            </div>
-
-            {/* Password */}
-            <div style={{ marginBottom: "1.5rem", position: "relative" }}>
-                <input
-                type={showPassword ? "text": "password"}
-                placeholder="Password"
-                {...register("password", {
-                    required: "Password is required",
-                })}
-                style={{
-                    width: "100%",
-                    padding: "10px 40px 10px 12px",
-                    borderRadius: "8px",
-                    border: errors.password ? "1px solid red" : "1px solid #ccc",
-                    outline: "none",
-                    fontSize: "15px",
-                    transition: "border 0.2s ease",
-                }}
-                />
-                <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                style={{
-                    position: "absolute",
-                    right: "12px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    fontSize: "13px",
-                    color: "oklch(42.4% 0.199 265.638)",
-                    fontWeight: "500",
-                    background: "transparent",
-                    cursor: "pointer",
-                    userSelect: "none",
-                    paddingLeft: "4px",
-                }}
-                >
-                    {showPassword ? "Hide" : "Show"}
-                </button>
-                {errors.password && <p style={{ color: "red", fontSize: "13px", marginTop: "5px" }}>
-                    {errors.password.message}
-                    </p>}
-            </div>
-
-            {/* Submit Button */}
-            <button
-            type="submit"
-            style={{
-                marginTop: "10px",
-                width: "100%",
-                padding: "12px",
-                background: "oklch(42.4% 0.199 265.638)",
-                color: "white",
-                border: "none",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "16px",
-                fontWeight: "500",
-                transition: "all 0.2s ease",
-            }}
-            onMouseOver={(e) => (e.currentTarget.style.background = "oklch(48.8% 0.243 264.376)")}
-            onMouseOut={(e) => (e.currentTarget.style.background = "oklch(42.4% 0.199 265.638)")}
-            >
-                Login
-            </button>
-
-            {/* Register Link */}
-            <div style={{ marginTop: "1rem", textAlign: "center" }}>
-                <p style={{ fontSize: "14px", color: "#555" }}>
-                    Don't have an account? {" "}
-                    <span onClick={() => router.push("/register")}
-                    style={{
-                        color: "oklch(42.4% 0.199 265.638)",
-                        cursor: "pointer",
-                        fontWeight: "600",
-                    }}>
-                        Register
-                    </span>
-                </p>
-            </div>
-            </form>   
+      <form onSubmit={handleSubmit(onSubmit)}>
+        {/* Email */}
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Email"
+            {...register("email", {
+              required: "Email is required",
+              pattern: {
+                value:
+                  /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                message: "Invalid email format",
+              },
+            })}
+            className={`w-full px-3 py-[10px] rounded-lg border text-[15px] outline-none ${
+              errors.email ? "border-red-500" : "border-[#ccc]"
+            }`}
+          />
+          {errors.email && (
+            <p className="text-red-500 text-[13px] mt-1">
+              {errors.email.message}
+            </p>
+          )}
         </div>
+
+        {/* Password */}
+        <div className="mb-4 relative min-h-[42px]">
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            {...register("password", {
+              required: "Password is required",
+            })}
+            className={`w-full px-3 py-[10px] rounded-lg border text-[15px] outline-none ${
+              errors.password ? "border-red-500" : "border-[#ccc]"
+            }`}
+          />
+
+          {/* SHOW / HIDE */}
+          <span
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[13px] font-medium cursor-pointer text-[oklch(42.4%_0.199_265.638)] select-none"
+            onClick={() => setShowPassword((prev) => !prev)}
+          >
+            {showPassword ? "HIDE" : "SHOW"}
+          </span>
+
+          {errors.password && (
+            <p className="text-red-500 text-[13px] mt-1">
+              {errors.password.message}
+            </p>
+          )}
+        </div>
+
+        {/* Submit Button */}
+        <button
+          type="submit"
+          className="mt-3 w-full py-3 bg-blue-700 text-white rounded-lg text-[16px] font-semibold cursor-pointer transition hover:bg-blue-800"
+        >
+          Login
+        </button>
+
+        {/* Register Link */}
+        <div className="mt-4 text-center">
+          <p className="text-[14px] text-[#555]">
+            Don't have an account?{" "}
+            <span
+              className="text-[oklch(42.4%_0.199_265.638)] font-semibold cursor-pointer"
+              onClick={() => router.push("/register")}
+            >
+              Register
+            </span>
+          </p>
+        </div>
+      </form>
+    </div>
     );
 }

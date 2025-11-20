@@ -16,11 +16,11 @@ export default function HomePage(){
         </p>
 
         <div className="mt-10 flex justify-center space-x-4">
-          <Link href="/register" className="px-6 py-3 bg-blue-800 text-white rounded-lg text-lg hover:bg-blue-700 transition">
-          Get Started
+          <Link href="/register" className="px-12 py-3 border border-gray-400 rounded-lg bg-gray-100 text-lg hover:bg-gray-200 transition">
+          Register
           </Link>
 
-          <Link href="/contact" className="px-6 py-3 border border-gray-400 rounded-lg text-lg hover:bg-gray-300 transition">
+          <Link href="/contact" className="px-12 py-3 border border-gray-400 rounded-lg bg-gray-100 text-lg hover:bg-gray-200 transition">
           Contact Us
           </Link>
         </div>

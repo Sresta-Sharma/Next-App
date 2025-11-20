@@ -8,7 +8,7 @@ export default function Navbar(){
     const pathname = usePathname();
 
     const linkClass = (path: string) =>
-        pathname === path ? "text-blue-700 font-semibold underline" : "hover:text-blue-700 transition";
+        pathname === path ? "text-blue-700 font-semibold underline" : "transition duration-200 hover:text-blue-700";
 
     return(
       <nav className="border-b bg-white">

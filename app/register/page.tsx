@@ -76,226 +76,159 @@ export default function RegisterForm() {
   };
 
   return (
-    <div
-      style={{
-        maxWidth: "400px",
-        margin: "4rem auto",
-        padding: "2.5rem",
-        borderRadius: "15px",
-        boxShadow: "0 8px 25px rgba(0,0,0,0.1)",
-        background: "#ffffff",
-        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-      }}
-    >
-      <h2
-        style={{
-          textAlign: "center",
-          color: "#333",
-          marginBottom: "1.5rem",
-        }}
-      >
+     <div className="max-w-[400px] mx-auto mt-16 p-10 rounded-[15px] shadow-lg bg-white font-[Segoe_UI]">
+      <h2 className="text-center text-[#222] mb-6 text-[1.6rem] font-bold">
         Create an Account
       </h2>
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        {/* Input Wrapper Style */}
-        <div style={{ marginBottom: "1rem" }}>
+        {/* Name */}
+        <div className="mb-4">
           <input
             placeholder="Full Name"
             {...register("name", { required: "Name is required" })}
-            style={{
-              width: "100%",
-              padding: "10px 12px",
-              borderRadius: "8px",
-              border: "1px solid #ccc",
-              outline: "none",
-              fontSize: "15px",
-            }}
+            className={`w-full px-3 py-2 rounded-lg border border-gray-300 text-[15px] outline-none ${
+              errors.name ? "border-red-500" : ""
+            }`}
           />
           {errors.name && (
-            <p style={{ color: "red", fontSize: "13px", marginTop: "5px" }}>
+            <p className="text-red-500 text-[13px] mt-1">
               {errors.name.message}
             </p>
           )}
         </div>
 
-        <div style={{ marginBottom: "1rem" }}>
+        {/* Email */}
+        <div className="mb-4">
           <input
             placeholder="Email"
             {...register("email", {
               required: "Email is required",
               pattern: {
-                value: /^[a-zA-Z][a-zA-Z0-9._%+-]*@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/i,
+                value:
+                  /^[a-zA-Z][a-zA-Z0-9._%+-]*@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/i,
                 message: "Invalid email address",
               },
             })}
-            style={{
-              width: "100%",
-              padding: "10px 12px",
-              borderRadius: "8px",
-              border: "1px solid #ccc",
-              outline: "none",
-              fontSize: "15px",
-            }}
+            className={`w-full px-3 py-2 rounded-lg border border-gray-300 text-[15px] outline-none ${
+              errors.email ? "border-red-500" : ""
+            }`}
           />
           {errors.email && (
-            <p style={{ color: "red", fontSize: "13px", marginTop: "5px" }}>
+            <p className="text-red-500 text-[13px] mt-1">
               {errors.email.message}
             </p>
           )}
         </div>
 
-        {/* Phone Number */}
-        <div style={{ marginBottom: "1rem" }}>
-            <input
+        {/* Phone */}
+        <div className="mb-4">
+          <input
             type="tel"
             placeholder="Phone Number"
             {...register("phone", {
-                required: "Phone number is required",
-                pattern: {
-                    value: /^(?:\+977)?9\d{9}$/,
-                    message: "Invalid phone number (must start with 9 and be 10 digits)",
-                },
-            })}
-            style={{
-                width: "100%",
-                padding: "10px 12px",
-                borderRadius: "8px",
-                border: errors.phone ? "1px solid red" : "1px solid #ccc",
-                outline: "none",
-                fontSize: "15px",
-            }}
-            />
-            {errors.phone && <p style={{ color: "red", fontSize: "13px", marginTop: "5px"}}>
-                {errors.phone.message}
-                </p>}
-        </div>
-
-        {/* Password field */}
-        <div style={{ marginBottom: "1.5rem" }}>
-          <div style={{ position: "relative", minHeight: "42px"}}>
-            <input
-            type={showPassword ? "text" : "password"}
-            placeholder="Password"
-            {...register("password", {
-              required: "Password is required",
-              minLength: { value: 6, message: "At least 6 characters" },
+              required: "Phone number is required",
               pattern: {
-                // Must not start with a space and must include at least 1 special character
-                value: /^(?!\s)(?=.*[!@#$%^&*(),.?":{}|<>]).{6,}$/,
-                message: "Password must not start with space and must include at least one special character",
+                value: /^(?:\+977)?9\d{9}$/,
+                message: "Invalid phone number (must start with 9 and be 10 digits)",
               },
             })}
-            style={{
-              width: "100%",
-              padding: "10px 40px 10px 12px",
-              borderRadius: "8px",
-              border: errors.password ? "1px solid red" : "1px solid #ccc",
-              outline: "none",
-              fontSize: "15px",
-            }}
+            className={`w-full px-3 py-2 rounded-lg border border-gray-300 text-[15px] outline-none ${
+              errors.phone ? "border-red-500" : ""
+            }`}
           />
-          <span 
-          onClick={() => setShowPassword((prev) => !prev)}
-          style={{
-            position: "absolute",
-            right: "12px",
-            top: "50%",
-            transform: "translateY(-50%)",
-            fontSize: "13px",
-            color: "oklch(42.4% 0.199 265.638)",
-            fontWeight: "500",
-            cursor: "pointer",
-            userSelect: "none",
-          }}>
-            {showPassword ? "HIDE" : "SHOW"}
-          </span>
+          {errors.phone && (
+            <p className="text-red-500 text-[13px] mt-1">
+              {errors.phone.message}
+            </p>
+          )}
+        </div>
+
+        {/* Password */}
+        <div className="mb-4">
+          <div className="relative min-h-[42px]">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              {...register("password", {
+                required: "Password is required",
+                minLength: {
+                  value: 6,
+                  message: "At least 6 characters",
+                },
+                pattern: {
+                  value: /^(?!\s)(?=.*[!@#$%^&*(),.?":{}|<>]).{6,}$/,
+                  message:
+                    "Password must not start with space and must include at least one special character",
+                },
+              })}
+              className={`w-full px-3 py-2 rounded-lg border border-gray-300 text-[15px] outline-none ${
+                errors.password ? "border-red-500" : ""
+              }`}
+            />
+
+            <span
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[13px] font-medium cursor-pointer text-blue-700 select-none"
+              onClick={() => setShowPassword((prev) => !prev)}
+            >
+              {showPassword ? "HIDE" : "SHOW"}
+            </span>
           </div>
 
           {errors.password && (
-            <p style={{ color: "red", fontSize: "13px", marginTop: "5px" }}>
+            <p className="text-red-500 text-[13px] mt-1">
               {errors.password.message}
             </p>
           )}
         </div>
 
         {/* Confirm Password */}
-        <div style={{ marginBottom: "1.5rem" }}>
-          <div style={{
-            position: "relative",
-            minHeight: "42px"
-          }}>
+        <div className="mb-4">
+          <div className="relative min-h-[42px]">
             <input
-            type={showConfirm ? "text" : "password"}
-            placeholder="Confirm Password"
-            {...register("confirmPassword", {
-              required: "Please confirm your password",
-              validate: (value) =>
-                value === password || "Passwords do not match",
-            })}
-            style={{
-              width: "100%",
-              padding: "10px 40px 10px 12px",
-              borderRadius: "8px",
-              border: errors.confirmPassword ? "1px solid red" : "1px solid #ccc",
-              outline: "none",
-              fontSize: "15px",
-            }}
-          />
-          <span 
-          onClick={() => setShowConfirm((prev) => !prev)}
-          style={{
-            position: "absolute",
-            right: "12px",
-            top: "50%",
-            transform: "translateY(-50%)",
-            fontSize: "13px",
-            color: "#007BFF",
-            fontWeight: "500",
-            cursor: "pointer",
-            userSelect: "none",
-          }}>
-            {showConfirm ? "HIDE" : "SHOW"}
-          </span>
+              type={showConfirm ? "text" : "password"}
+              placeholder="Confirm Password"
+              {...register("confirmPassword", {
+                required: "Please confirm your password",
+                validate: (value) =>
+                  value === password || "Passwords do not match",
+              })}
+              className={`w-full px-3 py-2 rounded-lg border border-gray-300 text-[15px] outline-none ${
+                errors.confirmPassword ? "border-red-500" : ""
+              }`}
+            />
+
+            <span
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[13px] font-medium cursor-pointer text-blue-700 select-none"
+              onClick={() => setShowConfirm((prev) => !prev)}
+            >
+              {showConfirm ? "HIDE" : "SHOW"}
+            </span>
           </div>
 
           {errors.confirmPassword && (
-            <p style={{ color: "red", fontSize: "13px", marginTop: "5px" }}>
+            <p className="text-red-500 text-[13px] mt-1">
               {errors.confirmPassword.message}
             </p>
           )}
         </div>
 
+        {/* Submit */}
         <button
           type="submit"
-          style={{
-            marginTop: "10px",
-            width: "100%",
-            padding: "12px",
-            background: "oklch(42.4% 0.199 265.638)",
-            color: "white",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
-            fontSize: "16px",
-            fontWeight: "600",
-            transition: "all 0.3s ease",
-          }}
-          onMouseOver={(e) => (e.currentTarget.style.background = "oklch(48.8% 0.243 264.376)")}
-          onMouseOut={(e) => (e.currentTarget.style.background = "oklch(42.4% 0.199 265.638)")}
+          className="mt-3 w-full py-3 bg-blue-700 text-white rounded-lg text-[16px] font-semibold cursor-pointer transition hover:bg-blue-800"
         >
           Register
         </button>
-        
-        <div style={{ marginTop: "1rem", textAlign: "center" }}>
-          <p style={{ fontSize: "14px", color: "#555" }}>
-            Already have an account? {" "}
-            <span onClick={() => router.push("/login")}
-            style={{
-              color: "oklch(42.4% 0.199 265.638)",
-              cursor: "pointer",
-              fontWeight: "600",
-            }}>
+
+        {/* Login Link */}
+        <div className="mt-4 text-center">
+          <p className="text-[14px] text-gray-600">
+            Already have an account?{" "}
+            <span
+              className="text-blue-700 font-semibold cursor-pointer"
+              onClick={() => router.push("/login")}
+            >
               Login
             </span>
           </p>
