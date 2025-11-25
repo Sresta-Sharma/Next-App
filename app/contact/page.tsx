@@ -3,6 +3,7 @@
 import { useState } from "react";
 import * as Yup from "yup";
 import { useRouter } from "next/navigation";
+import { count } from "console";
 
 export default function Home() {
 
@@ -11,6 +12,7 @@ export default function Home() {
     lastName: "",
     email: "",
     phone: "",
+    countryCode: "+977",
     message: "",
   });
 
@@ -23,11 +25,13 @@ export default function Home() {
   const validationSchema = Yup.object().shape({
     firstName: Yup.string()
       .required("First name is required!")
-      .min(2, "First name must be at least 2 characters!"),
+      .min(2, "First name must be at least 2 characters!")
+      .matches(/^[A-Za-z ]+$/, "First name must contain only letters!"),
 
     lastName: Yup.string()
       .required("Last name is required!")
-      .min(2, "Last name must be at least 2 characters!"),
+      .min(2, "Last name must be at least 2 characters!")
+      .matches(/^[A-Za-z ]+$/, "Last name must contain only letters!"),
 
     email: Yup.string().test(
       "email-or-phone",
@@ -36,7 +40,7 @@ export default function Home() {
         if (!value || value.trim() === "") return true; 
 
         const emailRegex =
-          /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+          /^[A-Za-z0-9](?!.*\.\.)[A-Za-z0-9._-]*[A-Za-z0-9]@[A-Za-z0-9-]+\.[A-Za-z]{2,}$/;
 
         return emailRegex.test(value);
       }
@@ -45,7 +49,7 @@ export default function Home() {
     phone: Yup.string().test(
       "phone-or-email",
       function (value) {
-        const { email } = this.parent;
+        const { email, countryCode } = this.parent;
 
         // Require at least one (email or phone)
         if ((!value || value.trim() === "") && (!email || email.trim() === "")) {
@@ -55,7 +59,7 @@ export default function Home() {
         }
 
         // If phone is provided, must be 10 digits
-        if (value && value.trim() !== "" && !/^(?:\+?\d{1,3})?\d{10,}$/.test(value)) {
+        if (value && !/^\d{10}$/.test(value)) {
           return this.createError({
             message: "Phone number must be 10 digits!",
           });
@@ -70,7 +74,7 @@ export default function Home() {
       .min(10, "Message must be at least 10 characters long!"),
   });
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   }
@@ -166,21 +170,41 @@ export default function Home() {
           </div>
 
           {/* Phone */}
-          <div>
-            <label htmlFor="phone" className="block text-gray-700 font-medium mb-1">
-              Phone
-            </label>
-            <input
-            id="phone"
-            name="phone"
-            type="tel"
-            placeholder="Enter your phone number"
-            value={formData.phone}
-            onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-            />
-            {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
-          </div>
+<div>
+  <label htmlFor="phone" className="block text-gray-700 font-medium mb-1">
+    Phone
+  </label>
+
+  <div className="flex gap-2">
+    {/* Country Code Dropdown */}
+    <select
+      name="countryCode"
+      value={formData.countryCode}
+      onChange={handleChange}
+      className="border border-gray-300 rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-blue-400"
+    >
+      <option value="+977">+977</option>
+      <option value="+91">+91</option>
+      <option value="+86">+86</option>
+      <option value="+975">+975</option>
+    </select>
+
+    {/* Phone Input */}
+    <input
+      id="phone"
+      name="phone"
+      type="tel"
+      placeholder="9800000000"
+      value={formData.phone}
+      onChange={handleChange}
+      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+    />
+  </div>
+
+      {errors.phone && (
+        <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+      )}
+    </div>
 
           {/* Message */}
           <div>

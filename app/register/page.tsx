@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 type RegisterInputs = {
   name: string;
   email: string;
+  countryCode: string;
   phone: string;
   password: string;
   confirmPassword: string;
@@ -19,7 +20,11 @@ export default function RegisterForm() {
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<RegisterInputs>();
+  } = useForm<RegisterInputs>({
+    defaultValues: {
+      countryCode: "+977",
+    },
+  });
 
   // watch password to validate confirmPassword
   const password = watch("password", "");
@@ -39,6 +44,9 @@ export default function RegisterForm() {
       return;
     }
 
+    // Combine country code and phone number
+    const fullphone = `${data.countryCode}${data.phone}`;
+
     try{
       
       // Send user data to backend API
@@ -50,7 +58,7 @@ export default function RegisterForm() {
         body: JSON.stringify({
           name: data.name,
           email: data.email,
-          phone: data.phone,
+          phone: fullphone,
           password: data.password,
         }),
       });
@@ -86,7 +94,16 @@ export default function RegisterForm() {
         <div className="mb-4">
           <input
             placeholder="Full Name"
-            {...register("name", { required: "Name is required" })}
+            {...register("name", { required: "Name is required",
+                minLength: {
+                value: 2,
+                message: "Name must be at least 2 characters"
+              },
+              pattern: {
+                value: /^[A-Za-z ]+$/,
+                message: "Name must contain only letters"
+              }
+             })}
             className={`w-full px-3 py-2 rounded-lg border border-gray-300 text-[15px] outline-none ${
               errors.name ? "border-red-500" : ""
             }`}
@@ -105,8 +122,7 @@ export default function RegisterForm() {
             {...register("email", {
               required: "Email is required",
               pattern: {
-                value:
-                  /^[a-zA-Z][a-zA-Z0-9._%+-]*@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/i,
+                value: /^[A-Za-z0-9](?!.*\.\.)[A-Za-z0-9._-]*@[A-Za-z0-9-]+\.[A-Za-z]{2,}$/,
                 message: "Invalid email address",
               },
             })}
@@ -121,28 +137,43 @@ export default function RegisterForm() {
           )}
         </div>
 
-        {/* Phone */}
+        {/* Phone + Country Code */}
         <div className="mb-4">
-          <input
-            type="tel"
-            placeholder="Phone Number"
-            {...register("phone", {
-              required: "Phone number is required",
-              pattern: {
-                value: /^(?:\+977)?9\d{9}$/,
-                message: "Invalid phone number (must start with 9 and be 10 digits)",
-              },
-            })}
-            className={`w-full px-3 py-2 rounded-lg border border-gray-300 text-[15px] outline-none ${
-              errors.phone ? "border-red-500" : ""
-            }`}
-          />
+          <label className="block text-gray-700 font-medium mb-1">Phone</label>
+
+          <div className="flex gap-2">
+            
+            {/* Country Code Dropdown */}
+            <select
+              {...register("countryCode")}
+              className="border border-gray-300 rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-blue-400"
+            >
+              <option value="+977">+977</option>
+              <option value="+91">+91</option>
+              <option value="+86">+86</option>
+              <option value="+975">+975</option>
+            </select>
+
+            {/* Phone Input */}
+            <input
+              type="tel"
+              placeholder="9800000000"
+              {...register("phone", {
+                required: "Phone number is required",
+                pattern: {
+                  value: /^\d{10}$/,
+                  message: "Phone number must be exactly 10 digits",
+                },
+              })}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+            />
+          </div>
+
           {errors.phone && (
-            <p className="text-red-500 text-[13px] mt-1">
-              {errors.phone.message}
-            </p>
+            <p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>
           )}
         </div>
+
 
         {/* Password */}
         <div className="mb-4">

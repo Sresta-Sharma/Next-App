@@ -9,6 +9,19 @@ type LoginInputs = {
     password: string;
 };
 
+type LoginResponse = { 
+  message?: string;
+  token?: string;
+  user?: {
+        user_id: number;
+        name: string;
+        email: string;
+        phone: string;
+        role: "admin" | "user";
+    };
+    error?: string;
+  };
+
 export default function LoginPage(){
     const router = useRouter();
     
@@ -28,29 +41,47 @@ export default function LoginPage(){
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({
-                    email: data.email,
-                    password: data.password,
-                }),
+                body: JSON.stringify(data),
+                cache: "no-store",
             });
 
-            const result = await response.json();
+            const result: LoginResponse = await response.json();
 
+            console.log("LOGIN RESPONSE:", result);
+            
             // If backend returned an error
-            if (!response.ok){
+            if (!response.ok) {
                 alert(result.error || "Login failed");
                 return;
             }
 
+            // If user is missing
+            if (!result.user){
+                alert("User data is missing in the response");
+                return;
+            }
+
+            // Clear any existing data
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            
             // Save token in local storage
-            localStorage.setItem("token", result.token);
+            localStorage.setItem("token", result.token!);
 
             //Save user details to not later fetch from backend on every page
-            localStorage.setItem("user", JSON.stringify(result.user));
-            
+            localStorage.setItem("user", JSON.stringify(result.user!));
+
+            console.log("FULL RESULT:", result);
+
             alert("Login successful!");
 
-            router.push("/dashboard");
+            // Role based redirection
+            if (result.user.role === "admin"){
+                router.push("/admin");
+            } else {
+                router.push("/dashboard");
+            }
+
         } catch(error){
             console.error("Login error: ",error);
             alert("Something went wrong. Try again!");

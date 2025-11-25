@@ -7,7 +7,7 @@ export default function NavbarWrapper() {
   const pathname = usePathname();
 
   // Hide navbar on dashboard pages
-  if (pathname.startsWith("/dashboard")) {
+  if (pathname.startsWith("/dashboard") || pathname.startsWith("/admin")) {
     return null;
   }
 
