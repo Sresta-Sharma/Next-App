@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import BlogCard from "../components/blogCard";
 
 type Blog = {
@@ -37,30 +38,102 @@ export default function BlogsPage() {
   }, []);
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-12">
+    <main className="min-h-screen bg-[#FAFAFA] text-[#111111]">
+      <div className="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 lg:grid-cols-3 gap-12">
 
-      <h1 className="text-4xl font-bold text-gray-900 mb-6">
-        Latest Stories
-      </h1>
+        {/* LEFT GRID (MAIN CONTENT) */}
+        <div className="lg:col-span-2 space-y-12">
 
-      <p className="text-lg text-gray-600 mb-10">
-        Explore the most recent posts — technical, personal, and everything in between.
-      </p>
+          {/* Heading */}
+          <section>
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">All Stories</h1>
+            <p className="text-lg text-[#737373] leading-relaxed max-w-xl">
+              Dive into all the posts — technical ideas, personal reflections, and everything in between.
+            </p>
+          </section>
 
-      {loading ? (
-        <p className="text-gray-500 text-lg">Loading blogs...</p>
-      ) : blogs.length === 0 ? (
-        <p className="text-gray-500 text-lg">No blogs found.</p>
-      ) : (
-        <div className="space-y-6">
-          {blogs.map((blog) => (
-            <BlogCard
-              key={blog.blog_id}
-              blog={blog}
-            />
-          ))}
+          {/* Blog List */}
+          <section className="space-y-8">
+            {loading ? (
+              <p className="text-gray-500 text-lg">Loading blogs...</p>
+            ) : blogs.length === 0 ? (
+              <p className="text-gray-500 text-lg">No blogs found.</p>
+            ) : (
+              blogs.map((blog) => (
+                <BlogCard key={blog.blog_id} blog={blog} />
+              ))
+            )}
+          </section>
         </div>
-      )}
-    </div>
+
+        {/* RIGHT SIDEBAR */}
+        <aside className="space-y-8">
+
+          {/* ABOUT CARD */}
+          <section className="bg-white p-6 rounded-lg shadow-sm">
+            <h3 className="text-lg font-semibold">About Beautiful Mess</h3>
+            <p className="mt-3 text-gray-600 text-sm leading-relaxed">
+              A space where ideas collide, evolve, and take shape—technical, personal, and honest.
+            </p>
+
+            <Link
+              href="/about"
+              className="text-sm inline-block mt-4 px-3 py-2 rounded-full border border-[#1A1A1A]"
+            >
+              Read more
+            </Link>
+          </section>
+
+          {/* TRENDING TOPICS */}
+          <section className="bg-white p-6 rounded-lg shadow-sm">
+            <h3 className="text-lg font-semibold">Trending Topics</h3>
+
+            <div className="mt-4 flex flex-wrap gap-3">
+              {[
+                "Tech & Coding",
+                "Life & Reflections",
+                "Productivity",
+                "Learning Journey",
+                "Creative Thoughts",
+                "Career & Growth",
+                "Experiences",
+                "Mindset",
+              ].map((tag) => (
+                <Link
+                  href={`/tag/${tag.replace(/\s+/g, "-").toLowerCase()}`}
+                  key={tag}
+                  className="text-sm px-3 py-2 rounded-full bg-[#F3F3F3] hover:bg-[#EDEDED]"
+                >
+                  {tag}
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          {/* SUBSCRIBE CARD */}
+          <section className="bg-white p-6 rounded-lg shadow-sm text-center">
+            <h4 className="font-semibold">Subscribe</h4>
+            <p className="mt-2 text-sm text-gray-600">
+              Get new stories delivered to your inbox.
+            </p>
+
+            <form className="mt-4 flex items-center gap-2">
+              <input
+                type="email"
+                placeholder="Your email"
+                className="flex-1 px-3 py-2 rounded-full border border-gray-200 text-sm"
+              />
+              <button
+                type="submit"
+                className="px-4 py-2 rounded-full bg-[#111111] text-white text-sm"
+              >
+                Subscribe
+              </button>
+            </form>
+          </section>
+
+        </aside>
+      </div>
+    </main>
   );
 }

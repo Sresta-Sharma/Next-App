@@ -1,6 +1,7 @@
 import Link from "next/link";
-import PublicNavbar from "./components/nav/publicNavbar";
 import BlogCard from "./components/blogCard";
+import WriteStoryButton from "./components/writeStoryButton";
+
 
 async function getBlogs() {
   try {
@@ -18,13 +19,12 @@ async function getBlogs() {
 }
 
 export default async function HomePage(){
+  
   const blogs = await getBlogs();
   const latest = blogs.slice(0,5); // show only latest 5
   
   return(
     <main className="min-h-screen bg-[#FAFAFA] text-[#111111]">
-      {/* NAVBAR */}
-      <PublicNavbar />
 
       {/* HERO */}
       <section className="max-w-4xl mx-auto px-6 pt-20 pb-12 text-center">
@@ -51,12 +51,7 @@ export default async function HomePage(){
             Start Reading
           </Link>
 
-          <Link
-            href="/write"
-            className="px-8 py-3 border border-[#1A1A1A] rounded-full hover:bg-gray-50 transition"
-          >
-            Write a Story
-          </Link>
+          < WriteStoryButton />
         </div>
       </section>
 
@@ -167,33 +162,6 @@ export default async function HomePage(){
           </section>
         </aside>
       </div>
-
-      {/* FOOTER */}
-      <footer className="border-t border-gray-100">
-        <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="text-sm text-[#1A1A1A]">
-            © 2025 Beautiful Mess — All rights reserved.
-          </div>
-
-          <nav className="flex items-center gap-6 text-sm">
-            <Link href="/" className="hover:underline">
-              Home
-            </Link>
-            <Link href="/blogs" className="hover:underline">
-              Blogs
-            </Link>
-            <Link href="/write" className="hover:underline">
-              Write a Story
-            </Link>
-            <Link href="/about" className="hover:underline">
-              About
-            </Link>
-            <Link href="/contact" className="hover:underline">
-              Contact
-            </Link>
-          </nav>
-        </div>
-      </footer>
     </main>
   );
 }
