@@ -26,6 +26,10 @@ app.get("/api/test", async(req, res) => {
 const authRoutes = require("./routes/authRoutes");
 app.use("/api/auth", authRoutes)
 
+// Import blog routes
+const blogRoutes = require("./routes/blogRoutes");
+app.use("/api/blog", blogRoutes)
+
 //Root /
 app.get("/", (req, res) => {
     res.send("Backend server is running!");
