@@ -13,12 +13,30 @@ const { registerUser,
         deleteUser, 
         updateUserRole,
         changePassword,
-        updateProfile
+        updateProfile,
+        requestPasswordResetOtp,
+        resetPassword,
+        verifyOtp,
+        refreshToken
      } = require("../controllers/authController");
 
-// Public Routes:
+// Public:
 router.post("/register", registerUser);
-router.post("/login", loginUser);
+
+// Login:
+router.post("/login", loginUser); // body: { email, password }
+
+// Forgot Password: request OTP
+router.post("/request-otp", requestPasswordResetOtp); // body: { email }
+
+// Verify OTP (both login & reset)
+router.post("/verify-otp", verifyOtp); // body:  {email, otp, purpose: "login"|"reset" }
+
+// Reset password using resetToken returned by verify-otp (Authorization header: Bearer <resetToken>)
+router.post("/reset-password", resetPassword);
+
+// Refresh token
+router.post("/refresh-token", refreshToken);
 
 // User Protected Route:
 router.get("/me", protect, (req, res) => {
