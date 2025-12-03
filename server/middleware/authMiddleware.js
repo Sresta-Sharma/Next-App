@@ -1,5 +1,3 @@
-console.log("AUTH MIDDLEWARE SECRET:", `"${process.env.JWT_ACCESS_SECRET}"`);
-
 const jwt = require("jsonwebtoken");
 
 const protect = (req, res, next) => {

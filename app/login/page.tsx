@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 type LoginInputs = {
-  email: string;
+  identifier: string; // email
   password: string;
 };
 
@@ -14,6 +14,7 @@ type LoginResponse = {
   accessToken?: string;
   refreshToken?: string;
   step?: "OTP_REQUIRED" | "SUCCESS";
+  otp_id?: string;
   user?: {
     user_id: number;
     name: string;
@@ -34,15 +35,18 @@ export default function LoginPage() {
   } = useForm<LoginInputs>();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const onSubmit: SubmitHandler<LoginInputs> = async (data) => {
+    setLoading(true);
+
     try {
       const response = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ email: data.identifier, password: data.password }),
         cache: "no-store",
       });
 
@@ -54,39 +58,44 @@ export default function LoginPage() {
         return;
       }
 
+      // As backend requires OTP
       if (result.step === "OTP_REQUIRED") {
-          localStorage.setItem("email_for_otp", data.email);
-
-          alert("OTP sent to your email!");
+          
+          // Sve email + purpose for verify-otp
+          localStorage.setItem("pending_email", data.identifier);
+          localStorage.setItem("pending_purpose", "login");
+          
+          alert("OTP sent to your email! Please verify!");
+          setLoading(false);
           router.push("/verify-otp");
           return; // VERY IMPORTANT
         }
       
+      // If token returned directly  
       if (!result.user) {
         alert("User data missing from response");
         return;
       }
 
-      // Remove old values
-      localStorage.removeItem("token");
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      localStorage.removeItem("user");
+      // Store new tokens returned by backend if backend sends tokens directly
+      if (result.accessToken && result.user) {
+        localStorage.setItem("accessToken", result.accessToken || "");
+        localStorage.setItem("refreshToken", result.refreshToken || "");
 
-      // Store new tokens returned by backend
-      localStorage.setItem("accessToken", result.accessToken || "");
-      localStorage.setItem("refreshToken", result.refreshToken || "");
+        // Store user
+        localStorage.setItem("user", JSON.stringify(result.user));
 
-      // Store user
-      localStorage.setItem("user", JSON.stringify(result.user));
+        alert("Login successful!");
+        setLoading(false);
 
-      alert("Login successful!");
-
-      if (result.user.role === "admin") {
-        router.push("/admin");
-      } else {
-        router.push("/dashboard");
+        if (result.user.role === "admin") {
+          router.push("/admin");
+        } else {
+          router.push("/dashboard");
+        }
+        return;
       }
+      alert("Unexpected response from server.");
     } catch (error) {
       console.error("Login error:", error);
       alert("Something went wrong!");
@@ -109,8 +118,8 @@ export default function LoginPage() {
               <input
                 type="text"
                 placeholder="Email"
-                {...register("email", {
-                  required: "Email is required",
+                {...register("identifier", {
+                  required: "This field is required",
                   pattern: {
                     value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
                     message: "Invalid email format",
@@ -118,11 +127,11 @@ export default function LoginPage() {
                 })}
                 className={`w-full px-4 py-3 rounded-lg text-sm border outline-none bg-white 
                 transition focus:border-[#1A1A1A] 
-                ${errors.email ? "border-red-500" : "border-gray-300"}
+                ${errors.identifier ? "border-red-500" : "border-gray-300"}
               `}
               />
-              {errors.email && (
-                <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+              {errors.identifier && (
+                <p className="text-red-500 text-xs mt-1">{errors.identifier.message}</p>
               )}
             </div>
 
@@ -161,10 +170,11 @@ export default function LoginPage() {
             {/* Submit Button */}
             <button
               type="submit"
+              disabled={loading}
               className="w-full py-3 border border-[#1A1A1A] rounded-full 
-            text-sm font-medium hover:bg-gray-100 transition"
+            text-sm font-medium hover:bg-gray-100 transition disabled:opacity-50"
             >
-              Login
+              {loading ? "Logging in..." : "Login"}
             </button>
 
             {/* Register Link */}

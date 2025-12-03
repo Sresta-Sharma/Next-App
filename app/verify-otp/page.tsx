@@ -1,4 +1,4 @@
-" use client"
+"use client"
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -22,9 +22,13 @@ export default function VerifyOtpPage() {
     const onSubmit: SubmitHandler<OTPInputs> = async (data) => {
         setLoading(true);
 
-        const email = localStorage.getItem("email_for_otp");
-        if (!email) {
-            alert("Email missing! Restart login/reset process.");
+        // Read stored data
+        const email = localStorage.getItem("pending_email");
+        const purpose = localStorage.getItem("pending_purpose"); // login or reset
+        
+        if (!email || !purpose) {
+            alert("Missing verification data! Restart the process.");
+            setLoading(false);
             return;
         }
 
@@ -35,29 +39,61 @@ export default function VerifyOtpPage() {
                     "Content-Type" : "application/json",
                 },
                 body: JSON.stringify({
-                    email: email,
-                    otp: data.otp
+                    email,
+                    otp: data.otp,
+                    purpose,  //backend expects "purpose"
                 }),
             });
 
             const result = await res.json();
 
             if (!res.ok) {
-                alert(result.message || "Invalid OTP!");
+                alert(result.error || result.message || "Invalid OTP!");
                 setLoading(false);
                 return;
             }
 
-            alert("OTP verified successfully!");
-
-            // Save tokens and user data
-            localStorage.setItem("accessToken", result.accessToken);
-            localStorage.setItem("refreshToken", result.refreshToken);
-            localStorage.setItem("user", JSON.stringify(result.user));
+            // If login: store tokens and redirect
+            if (purpose === "login" && result.accessToken && result.user) {
+              localStorage.setItem("accessToken", result.accessToken || "");
+              localStorage.setItem("refreshToken", result.refreshToken || "");
+              localStorage.setItem("user", JSON.stringify(result.user));
             
-            router.push("/reset-password");
-        }
-        catch(err){
+              // cleanup
+              localStorage.removeItem("pending_email");
+              localStorage.removeItem("pending_purpose");
+
+              const role = result.user.role?.toLowerCase();
+
+              alert("Login successful!");
+              setLoading(false);
+            
+              // Redirect based on role
+              if (role === "admin") {
+                router.push("/admin/dashboard");
+              } else {
+                router.push("/user/dashboard");
+              }
+
+              return;
+            }
+        
+            // If reset-password
+            if (purpose === "reset") {
+              // save otp so that reset page can call reset-password
+              localStorage.setItem("pending_reset_otp", data.otp);
+
+              // remove purpose but keep pending_email since we'll use it in reset
+              localStorage.removeItem("pending_purpose");
+
+              alert("OTP verified. You may now reset your password.");
+              setLoading(false);
+              router.push("/reset-password");
+              return;
+            }
+
+            alert("Unexpected response from server!");
+          } catch(err){
             console.log(err);
             alert("Something went wrong. Try again!");
         }
@@ -65,19 +101,24 @@ export default function VerifyOtpPage() {
         setLoading(false);
     };
     return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 px-4">
-      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
-        <h2 className="text-3xl font-bold text-center mb-6">Verify OTP</h2>
-        <p className="text-center text-gray-600 mb-4">
+    <div className="min-h-screen bg-white">
+       <div className="min-h-screen flex items-center justify-center bg-[#fafafa] px-6 py-16 relative">
+        <div className="w-full max-w-md bg-white p-10 rounded-2xl border border-[#1A1A1A]/20 shadow-sm shadow-[#000]/10 -mt-30">
+        
+        <h2 className="text-center text-2xl font-bold text-[#111] tracking-tight mb-2">Verify OTP</h2>
+       
+        <p className="text-center text-gray-600 mb-6 text-sm">
           Enter the 6-digit OTP sent to your email.
         </p>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
             <input
               type="text"
               placeholder="Enter OTP"
-              className="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200 focus:outline-none"
+              className={`w-full px-4 py-3 rounded-lg text -sm border outline-none bg-white
+              transition focus: border-[#1A1A1A]
+              ${errors.otp ? "border-red-500" : "border-gray-300"}`}
               {...register("otp", {
                 required: "OTP is required",
                 minLength: {
@@ -97,17 +138,25 @@ export default function VerifyOtpPage() {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+            className="w-full py-3 border border-[#1A1A1A] rounded-full 
+            text-sm font-medium hover:bg-gray-100 transition disabled:opacity-50"
             disabled={loading}
           >
             {loading ? "Verifying..." : "Verify OTP"}
           </button>
-        </form>
 
-        <p className="text-center text-gray-600 mt-4">
-          Didn’t receive the OTP?{" "}
-          <button className="text-blue-600 hover:underline">Resend</button>
-        </p>
+          {/* Back to Login */}
+            <p className="text-center text-sm text-gray-600">
+              Wrong email?{" "}
+              <span
+                className="text-[#111] font-semibold underline cursor-pointer"
+                onClick={() => router.push("/login")}
+              >
+                Login
+              </span>
+            </p>
+        </form>
+        </div>
       </div>
     </div>
   );

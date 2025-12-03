@@ -17,7 +17,7 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/forgot-password", {
+      const res = await fetch("http://localhost:5000/api/auth/request-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -26,20 +26,26 @@ export default function ForgotPasswordPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Something went wrong");
+        setError(data.message || "Something went wrong");
         setLoading(false);
         return;
       }
 
+      // Save email + purpose for verify-otp
+      localStorage.setItem("pending_email", email);
+      localStorage.setItem("pending_purpose", "reset");
+
+
       setSuccess("OTP has been sent to your email");
       setLoading(false);
 
-      // Redirect to reset-password page (user will enter email + otp + new password)
+      // Redirect to verify otp
       setTimeout(() => {
-        router.push("/reset-password");
+        router.push("/verify-otp");
       }, 1000);
 
     } catch (err) {
+      console.error("Forgot error: ",err);
       setError("Failed to send OTP. Please try again.");
       setLoading(false);
     }
@@ -70,7 +76,7 @@ export default function ForgotPasswordPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
 
-            {/* Email Input */}
+            {/* Identifier Input */}
             <div>
               <input
                 type="email"

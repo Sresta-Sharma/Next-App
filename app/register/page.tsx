@@ -27,6 +27,7 @@ export default function RegisterPage() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const password = watch("password");
 
@@ -37,6 +38,7 @@ export default function RegisterPage() {
     }
 
     const fullphone = `${data.countryCode}${data.phone}`;
+    setLoading(true);
 
     try {
       const response = await fetch("http://localhost:5000/api/auth/register", {
@@ -54,15 +56,19 @@ export default function RegisterPage() {
 
       if (!response.ok) {
         alert(result.error || "Registration failed");
+        setLoading(false);
         return;
       }
 
-      alert("Registration successful!");
+      alert("Registration successful! Please login.");
+
       router.push("/login");
     } catch (err) {
       console.error("Registration error:", err);
       alert("Something went wrong.");
     }
+
+    setLoading(false);
   };
 
   return (
@@ -216,10 +222,11 @@ export default function RegisterPage() {
           {/* Submit */}
           <button
             type="submit"
+            disabled={loading}
             className="w-full py-3 border border-[#1A1A1A] rounded-full 
-            text-sm font-medium hover:bg-gray-100 transition"
+            text-sm font-medium hover:bg-gray-100 transition disabled:opacity-50"
           >
-            Register
+            {loading? "Creating account..." : "Register"}
           </button>
 
           {/* Login Link */}
