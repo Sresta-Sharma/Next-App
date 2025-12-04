@@ -27,7 +27,7 @@ export default async function HomePage(){
     <main className="min-h-screen bg-[#FAFAFA] text-[#111111]">
 
       {/* HERO */}
-      <section className="max-w-4xl mx-auto px-6 pt-20 pb-12 text-center">
+      <section className="max-w-4xl px-6 pt-20 pb-12 text-center  bg-red-500">
         <h1 className="text-5xl md:text-6xl font-extrabold leading-tight">
           Beautiful Mess
         </h1>
