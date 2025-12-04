@@ -1,192 +1,195 @@
 "use client";
 
-import { useForm, SubmitHandler} from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 type LoginInputs = {
-    email: string;
-    password: string;
+  identifier: string; // email
+  password: string;
 };
 
-export default function LoginPage(){
-    const router = useRouter();
-    
-    const{
-        register,
-        handleSubmit,
-        formState: {errors},
-    } = useForm<LoginInputs>();
+type LoginResponse = {
+  message?: string;
+  accessToken?: string;
+  refreshToken?: string;
+  step?: "OTP_REQUIRED" | "SUCCESS";
+  otp_id?: string;
+  user?: {
+    user_id: number;
+    name: string;
+    email: string;
+    phone: string;
+    role: "admin" | "user";
+  };
+  error?: string;
+};
 
-    const [showPassword, setShowPassword] = useState(false);
+export default function LoginPage() {
+  const router = useRouter();
 
-    //When form is submitted
-    const onSubmit: SubmitHandler<LoginInputs> = async (data) => {
-        try{
-            const response = await fetch("http://localhost:5000/api/auth/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    email: data.email,
-                    password: data.password,
-                }),
-            });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginInputs>();
 
-            const result = await response.json();
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-            // If backend returned an error
-            if (!response.ok){
-                alert(result.error || "Login failed");
-                return;
-            }
+  const onSubmit: SubmitHandler<LoginInputs> = async (data) => {
+    setLoading(true);
 
-            // Save token in local storage
-            localStorage.setItem("token", result.token);
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: data.identifier, password: data.password }),
+        cache: "no-store",
+      });
 
-            //Save user details to not later fetch from backend on every page
-            localStorage.setItem("user", JSON.stringify(result.user));
-            
-            alert("Login successful!");
+      const result: LoginResponse = await response.json();
+      console.log("LOGIN RESPONSE:", result);
 
-            router.push("/dashboard");
-        } catch(error){
-            console.error("Login error: ",error);
-            alert("Something went wrong. Try again!");
+      if (!response.ok) {
+        alert(result.error || "Login failed");
+        return;
+      }
+
+      // As backend requires OTP
+      if (result.step === "OTP_REQUIRED") {
+          
+          // Sve email + purpose for verify-otp
+          localStorage.setItem("pending_email", data.identifier);
+          localStorage.setItem("pending_purpose", "login");
+          
+          alert("OTP sent to your email! Please verify!");
+          setLoading(false);
+          router.push("/verify-otp");
+          return; // VERY IMPORTANT
         }
-    };
+      
+      // If token returned directly  
+      if (!result.user) {
+        alert("User data missing from response");
+        return;
+      }
 
-    return(
-        <div
-        style={{
-            maxWidth: "400px",
-            margin: "4rem auto",
-            padding: "2.5rem",
-            borderRadius: "15px",
-            boxShadow: "0 8px 25px rgba(0,0,0,0.1)",
-            background: "#ffffff",
-            fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-        }}
-        >
-            <h2
-            style={{
-                textAlign: "center",
-                color: "#333",
-                marginBottom: "1.5rem",
-                fontSize: "28px",
-                fontWeight: "600",
-            }}
-            >
-                Login
-            </h2>
+      // Store new tokens returned by backend if backend sends tokens directly
+      if (result.accessToken && result.user) {
+        localStorage.setItem("accessToken", result.accessToken || "");
+        localStorage.setItem("refreshToken", result.refreshToken || "");
 
-        <form onSubmit={handleSubmit(onSubmit)}>
+        // Store user
+        localStorage.setItem("user", JSON.stringify(result.user));
+
+        alert("Login successful!");
+        setLoading(false);
+
+        if (result.user.role === "admin") {
+          router.push("/admin");
+        } else {
+          router.push("/dashboard");
+        }
+        return;
+      }
+      alert("Unexpected response from server.");
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("Something went wrong!");
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-white">
+      <div className="min-h-screen flex items-center justify-center bg-[#fafafa] px-6 py-16 relative">
+        <div className="w-full max-w-md bg-white p-10 rounded-2xl border border-[#1A1A1A]/20 shadow-sm shadow-[#000]/10 -mt-30">
+
+          <h2 className="text-center text-2xl font-bold text-[#111] tracking-tight mb-8">
+            Login
+          </h2>
+
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+
             {/* Email */}
-            <div style={{ marginBottom: "1rem"}}>
-                <input
+            <div>
+              <input
                 type="text"
                 placeholder="Email"
-                {...register("email", {
-                    required: "Email is required",
-                    pattern: {
-                        value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-                        message: "Invalid email format",
-                    },
+                {...register("identifier", {
+                  required: "This field is required",
+                  pattern: {
+                    value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                    message: "Invalid email format",
+                  },
                 })}
-                style={{
-                    width: "100%",
-                    padding: "12px 14px",
-                    borderRadius: "8px",
-                    border: errors.email ? "1px solid red" : "1px solid #ccc",
-                    outline: "none",
-                    fontSize: "15px",
-                    transition: "border 0.2s ease",
-                }}
-                />
-                {errors.email && <p style={{ color: "red", fontSize: "13px", marginTop: "5px" }}>
-                    {errors.email.message}</p>}
+                className={`w-full px-4 py-3 rounded-lg text-sm border outline-none bg-white 
+                transition focus:border-[#1A1A1A] 
+                ${errors.identifier ? "border-red-500" : "border-gray-300"}
+              `}
+              />
+              {errors.identifier && (
+                <p className="text-red-500 text-xs mt-1">{errors.identifier.message}</p>
+              )}
             </div>
 
             {/* Password */}
-            <div style={{ marginBottom: "1.5rem", position: "relative" }}>
-                <input
-                type={showPassword ? "text": "password"}
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
                 placeholder="Password"
-                {...register("password", {
-                    required: "Password is required",
-                })}
-                style={{
-                    width: "100%",
-                    padding: "10px 40px 10px 12px",
-                    borderRadius: "8px",
-                    border: errors.password ? "1px solid red" : "1px solid #ccc",
-                    outline: "none",
-                    fontSize: "15px",
-                    transition: "border 0.2s ease",
-                }}
-                />
-                <button
-                type="button"
+                {...register("password", { required: "Password is required" })}
+                className={`w-full px-4 py-3 rounded-lg text-sm border outline-none bg-white 
+                transition focus:border-[#1A1A1A]
+                ${errors.password ? "border-red-500" : "border-gray-300"}
+              `}
+              />
+
+              <span
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-medium 
+              cursor-pointer text-[#347970]"
                 onClick={() => setShowPassword((prev) => !prev)}
-                style={{
-                    position: "absolute",
-                    right: "12px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    fontSize: "13px",
-                    color: "oklch(42.4% 0.199 265.638)",
-                    fontWeight: "500",
-                    background: "transparent",
-                    cursor: "pointer",
-                    userSelect: "none",
-                    paddingLeft: "4px",
-                }}
-                >
-                    {showPassword ? "Hide" : "Show"}
-                </button>
-                {errors.password && <p style={{ color: "red", fontSize: "13px", marginTop: "5px" }}>
-                    {errors.password.message}
-                    </p>}
+              >
+                {showPassword ? "HIDE" : "SHOW"}
+              </span>
+
+              {errors.password && (
+                <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
+              )}
+            </div>
+
+            {/* Forgot Password */}
+            <div className="text-right -mt-3">
+              <span onClick={() => router.push("/forgot-password")}
+              className="text-sm text-[#393e3d] font-medium cursor-pointer underline"
+              > Forgot Password?</span>
             </div>
 
             {/* Submit Button */}
             <button
-            type="submit"
-            style={{
-                marginTop: "10px",
-                width: "100%",
-                padding: "12px",
-                background: "oklch(42.4% 0.199 265.638)",
-                color: "white",
-                border: "none",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "16px",
-                fontWeight: "500",
-                transition: "all 0.2s ease",
-            }}
-            onMouseOver={(e) => (e.currentTarget.style.background = "oklch(48.8% 0.243 264.376)")}
-            onMouseOut={(e) => (e.currentTarget.style.background = "oklch(42.4% 0.199 265.638)")}
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 border border-[#1A1A1A] rounded-full 
+            text-sm font-medium hover:bg-gray-100 transition disabled:opacity-50"
             >
-                Login
+              {loading ? "Logging in..." : "Login"}
             </button>
 
             {/* Register Link */}
-            <div style={{ marginTop: "1rem", textAlign: "center" }}>
-                <p style={{ fontSize: "14px", color: "#555" }}>
-                    Don't have an account? {" "}
-                    <span onClick={() => router.push("/register")}
-                    style={{
-                        color: "oklch(42.4% 0.199 265.638)",
-                        cursor: "pointer",
-                        fontWeight: "600",
-                    }}>
-                        Register
-                    </span>
-                </p>
-            </div>
-            </form>   
+            <p className="text-center text-sm text-gray-600">
+              Don’t have an account?{" "}
+              <span
+                className="text-[#111] font-semibold underline cursor-pointer"
+                onClick={() => router.push("/register")}
+              >
+                Sign Up
+              </span>
+            </p>
+          </form>
         </div>
-    );
+      </div>
+    </div>
+  );
 }

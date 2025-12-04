@@ -1,306 +1,247 @@
 "use client";
 
 import { useForm, SubmitHandler } from "react-hook-form";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 type RegisterInputs = {
   name: string;
   email: string;
+  countryCode: string;
   phone: string;
   password: string;
   confirmPassword: string;
 };
 
-export default function RegisterForm() {
-  // initialize form
+export default function RegisterPage() {
+  const router = useRouter();
+
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<RegisterInputs>();
+  } = useForm<RegisterInputs>({
+    defaultValues: { countryCode: "+977" },
+  });
 
-  // watch password to validate confirmPassword
-  const password = watch("password", "");
-
-  // for toggling password visibility
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const router = useRouter();
-  
-  // Function that runs on submit
+  const password = watch("password");
+
   const onSubmit: SubmitHandler<RegisterInputs> = async (data) => {
-    
-    // Frontend confirmPassword check
     if (data.password !== data.confirmPassword) {
       alert("Passwords do not match");
       return;
     }
 
-    try{
-      
-      // Send user data to backend API
+    const fullphone = `${data.countryCode}${data.phone}`;
+    setLoading(true);
+
+    try {
       const response = await fetch("http://localhost:5000/api/auth/register", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: data.name,
           email: data.email,
-          phone: data.phone,
+          phone: fullphone,
           password: data.password,
         }),
       });
 
       const result = await response.json();
 
-      // API returned an error
       if (!response.ok) {
         alert(result.error || "Registration failed");
+        setLoading(false);
         return;
       }
 
-      // Success
-      alert("Registration successful!");
-      console.log("Backend response: ",result);
+      alert("Registration successful! Please login.");
 
-      // Redirect to login page
       router.push("/login");
-    } catch(err){
-      console.error("Registration error: ",err);
-      alert("Something went wrong. Please try again.");
+    } catch (err) {
+      console.error("Registration error:", err);
+      alert("Something went wrong.");
     }
+
+    setLoading(false);
   };
 
   return (
-    <div
-      style={{
-        maxWidth: "400px",
-        margin: "4rem auto",
-        padding: "2.5rem",
-        borderRadius: "15px",
-        boxShadow: "0 8px 25px rgba(0,0,0,0.1)",
-        background: "#ffffff",
-        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-      }}
-    >
-      <h2
-        style={{
-          textAlign: "center",
-          color: "#333",
-          marginBottom: "1.5rem",
-        }}
-      >
-        Create an Account
-      </h2>
+    <div className="min-h-screen bg-white">
+    <div className="min-h-screen flex items-center justify-center bg-[#fafafa] px-6 py-16 relative">
+      <div className="w-full max-w-md bg-white p-10 rounded-2xl border border-[#1A1A1A]/20 shadow-sm shadow-[#000]/10 -mt-10">
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        {/* Input Wrapper Style */}
-        <div style={{ marginBottom: "1rem" }}>
-          <input
-            placeholder="Full Name"
-            {...register("name", { required: "Name is required" })}
-            style={{
-              width: "100%",
-              padding: "10px 12px",
-              borderRadius: "8px",
-              border: "1px solid #ccc",
-              outline: "none",
-              fontSize: "15px",
-            }}
-          />
-          {errors.name && (
-            <p style={{ color: "red", fontSize: "13px", marginTop: "5px" }}>
-              {errors.name.message}
-            </p>
-          )}
-        </div>
+        <h2 className="text-center text-2xl font-bold text-[#111] tracking-tight mb-8">
+          Create an Account
+        </h2>
 
-        <div style={{ marginBottom: "1rem" }}>
-          <input
-            placeholder="Email"
-            {...register("email", {
-              required: "Email is required",
-              pattern: {
-                value: /^[a-zA-Z][a-zA-Z0-9._%+-]*@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/i,
-                message: "Invalid email address",
-              },
-            })}
-            style={{
-              width: "100%",
-              padding: "10px 12px",
-              borderRadius: "8px",
-              border: "1px solid #ccc",
-              outline: "none",
-              fontSize: "15px",
-            }}
-          />
-          {errors.email && (
-            <p style={{ color: "red", fontSize: "13px", marginTop: "5px" }}>
-              {errors.email.message}
-            </p>
-          )}
-        </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
-        {/* Phone Number */}
-        <div style={{ marginBottom: "1rem" }}>
+          {/* Full Name */}
+          <div>
             <input
-            type="tel"
-            placeholder="Phone Number"
-            {...register("phone", {
-                required: "Phone number is required",
+              placeholder="Full Name"
+              {...register("name", {
+                required: "Name is required",
+                minLength: { value: 2, message: "At least 2 characters" },
                 pattern: {
-                    value: /^(?:\+977)?9\d{9}$/,
-                    message: "Invalid phone number (must start with 9 and be 10 digits)",
+                  value: /^[A-Za-z ]+$/,
+                  message: "Only letters allowed",
                 },
-            })}
-            style={{
-                width: "100%",
-                padding: "10px 12px",
-                borderRadius: "8px",
-                border: errors.phone ? "1px solid red" : "1px solid #ccc",
-                outline: "none",
-                fontSize: "15px",
-            }}
+              })}
+              className={`w-full px-4 py-3 rounded-lg text-sm border outline-none bg-white 
+                transition focus:border-[#1A1A1A]
+                ${errors.name ? "border-red-500" : "border-gray-300"}
+              `}
             />
-            {errors.phone && <p style={{ color: "red", fontSize: "13px", marginTop: "5px"}}>
-                {errors.phone.message}
-                </p>}
-        </div>
-
-        {/* Password field */}
-        <div style={{ marginBottom: "1.5rem" }}>
-          <div style={{ position: "relative", minHeight: "42px"}}>
-            <input
-            type={showPassword ? "text" : "password"}
-            placeholder="Password"
-            {...register("password", {
-              required: "Password is required",
-              minLength: { value: 6, message: "At least 6 characters" },
-              pattern: {
-                // Must not start with a space and must include at least 1 special character
-                value: /^(?!\s)(?=.*[!@#$%^&*(),.?":{}|<>]).{6,}$/,
-                message: "Password must not start with space and must include at least one special character",
-              },
-            })}
-            style={{
-              width: "100%",
-              padding: "10px 40px 10px 12px",
-              borderRadius: "8px",
-              border: errors.password ? "1px solid red" : "1px solid #ccc",
-              outline: "none",
-              fontSize: "15px",
-            }}
-          />
-          <span 
-          onClick={() => setShowPassword((prev) => !prev)}
-          style={{
-            position: "absolute",
-            right: "12px",
-            top: "50%",
-            transform: "translateY(-50%)",
-            fontSize: "13px",
-            color: "oklch(42.4% 0.199 265.638)",
-            fontWeight: "500",
-            cursor: "pointer",
-            userSelect: "none",
-          }}>
-            {showPassword ? "HIDE" : "SHOW"}
-          </span>
+            {errors.name && (
+              <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>
+            )}
           </div>
 
-          {errors.password && (
-            <p style={{ color: "red", fontSize: "13px", marginTop: "5px" }}>
-              {errors.password.message}
-            </p>
-          )}
-        </div>
-
-        {/* Confirm Password */}
-        <div style={{ marginBottom: "1.5rem" }}>
-          <div style={{
-            position: "relative",
-            minHeight: "42px"
-          }}>
+          {/* Email */}
+          <div>
             <input
-            type={showConfirm ? "text" : "password"}
-            placeholder="Confirm Password"
-            {...register("confirmPassword", {
-              required: "Please confirm your password",
-              validate: (value) =>
-                value === password || "Passwords do not match",
-            })}
-            style={{
-              width: "100%",
-              padding: "10px 40px 10px 12px",
-              borderRadius: "8px",
-              border: errors.confirmPassword ? "1px solid red" : "1px solid #ccc",
-              outline: "none",
-              fontSize: "15px",
-            }}
-          />
-          <span 
-          onClick={() => setShowConfirm((prev) => !prev)}
-          style={{
-            position: "absolute",
-            right: "12px",
-            top: "50%",
-            transform: "translateY(-50%)",
-            fontSize: "13px",
-            color: "#007BFF",
-            fontWeight: "500",
-            cursor: "pointer",
-            userSelect: "none",
-          }}>
-            {showConfirm ? "HIDE" : "SHOW"}
-          </span>
+              placeholder="Email"
+              {...register("email", {
+                required: "Email is required",
+                pattern: {
+                  value: /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
+                  message: "Invalid email",
+                },
+              })}
+              className={`w-full px-4 py-3 rounded-lg text-sm border outline-none bg-white 
+                transition focus:border-[#1A1A1A]
+                ${errors.email ? "border-red-500" : "border-gray-300"}
+              `}
+            />
+            {errors.email && (
+              <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
+            )}
           </div>
 
-          {errors.confirmPassword && (
-            <p style={{ color: "red", fontSize: "13px", marginTop: "5px" }}>
-              {errors.confirmPassword.message}
-            </p>
-          )}
-        </div>
+          {/* Phone */}
+          <div>
+            <div className="flex gap-3">
+              <select
+                {...register("countryCode")}
+                className="px-4 py-3 border border-gray-300 rounded-lg text-sm bg-white 
+                focus:border-[#1A1A1A] outline-none"
+              >
+                <option value="+977">+977</option>
+                <option value="+91">+91</option>
+                <option value="+86">+86</option>
+                <option value="+975">+975</option>
+              </select>
 
-        <button
-          type="submit"
-          style={{
-            marginTop: "10px",
-            width: "100%",
-            padding: "12px",
-            background: "oklch(42.4% 0.199 265.638)",
-            color: "white",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
-            fontSize: "16px",
-            fontWeight: "600",
-            transition: "all 0.3s ease",
-          }}
-          onMouseOver={(e) => (e.currentTarget.style.background = "oklch(48.8% 0.243 264.376)")}
-          onMouseOut={(e) => (e.currentTarget.style.background = "oklch(42.4% 0.199 265.638)")}
-        >
-          Register
-        </button>
-        
-        <div style={{ marginTop: "1rem", textAlign: "center" }}>
-          <p style={{ fontSize: "14px", color: "#555" }}>
-            Already have an account? {" "}
-            <span onClick={() => router.push("/login")}
-            style={{
-              color: "oklch(42.4% 0.199 265.638)",
-              cursor: "pointer",
-              fontWeight: "600",
-            }}>
-              Login
+              <input
+                placeholder="Phone (10 digits)"
+                {...register("phone", {
+                  required: "Phone number is required",
+                  pattern: {
+                    value: /^\d{10}$/,
+                    message: "Must be 10 digits",
+                  },
+                })}
+                className={`w-full px-4 py-3 rounded-lg text-sm border outline-none bg-white 
+                  transition focus:border-[#1A1A1A]
+                  ${errors.phone ? "border-red-500" : "border-gray-300"}
+                `}
+              />
+            </div>
+
+            {errors.phone && (
+              <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>
+            )}
+          </div>
+
+          {/* Password */}
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              {...register("password", {
+                required: "Password is required",
+                minLength: { value: 6, message: "At least 6 characters" },
+                pattern: {
+                  value: /^(?!\s)(?=.*[!@#$%^&*]).{6,}$/,
+                  message: "Must include a special character",
+                },
+              })}
+              className={`w-full px-4 py-3 rounded-lg text-sm border outline-none bg-white 
+                transition focus:border-[#1A1A1A]
+                ${errors.password ? "border-red-500" : "border-gray-300"}
+              `}
+            />
+
+            <span
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-medium cursor-pointer text-[#347970]"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? "HIDE" : "SHOW"}
+            </span>
+
+            {errors.password && (
+              <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
+            )}
+          </div>
+
+          {/* Confirm Password */}
+          <div className="relative">
+            <input
+              type={showConfirm ? "text" : "password"}
+              placeholder="Confirm Password"
+              {...register("confirmPassword", {
+                required: "Please confirm password",
+                validate: (value) =>
+                  value === password || "Passwords do not match",
+              })}
+              className={`w-full px-4 py-3 rounded-lg text-sm border outline-none bg-white 
+                transition focus:border-[#1A1A1A]
+                ${errors.confirmPassword ? "border-red-500" : "border-gray-300"}
+              `}
+            />
+
+            <span
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-medium cursor-pointer text-[#347970]"
+              onClick={() => setShowConfirm(!showConfirm)}
+            >
+              {showConfirm ? "HIDE" : "SHOW"}
+            </span>
+
+            {errors.confirmPassword && (
+              <p className="text-red-500 text-xs mt-1">{errors.confirmPassword.message}</p>
+            )}
+          </div>
+
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 border border-[#1A1A1A] rounded-full 
+            text-sm font-medium hover:bg-gray-100 transition disabled:opacity-50"
+          >
+            {loading? "Creating account..." : "Register"}
+          </button>
+
+          {/* Login Link */}
+          <p className="text-center text-sm text-gray-600">
+            Already have an account?{" "}
+            <span
+              className="text-[#111] font-semibold underline cursor-pointer"
+              onClick={() => router.push("/login")}
+            >
+              Sign In
             </span>
           </p>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
+  </div>
   );
 }
