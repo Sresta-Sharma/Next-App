@@ -4,64 +4,73 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-    const router = useRouter();
+  const router = useRouter();
 
-    useEffect(() => {
-        const user = JSON.parse(localStorage.getItem("user") || "null");
-        
-        // Only admin allowed
-        if (!user || user.role !== "admin") {
-            router.replace("/login");
-        }
-    }, []);
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "null");
 
-    // Logout handler
-    const handleLogout = () => {
-        const confirmLogout = confirm("Are you sure you want to logout?");
-        if (!confirmLogout) return;
+    // Only admin allowed
+    if (!user || user.role !== "admin") {
+      router.replace("/login");
+    }
+  }, []);
 
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        
-        router.replace("/");
-    };
+  const handleLogout = () => {
+    const confirmLogout = confirm("Are you sure you want to logout?");
+    if (!confirmLogout) return;
 
-    return (
-        <div className="flex min-h-screen">
-            {/* Sidebar */}
-            <aside className="w-64 bg-gray-800 text-white p-6">
-                <div>
-                <h2 className="text-2xl font-bold mb-6">Admin Panel</h2>
-                
-                <ul className="space-y-4">
-                    <li>
-                        <Link href="/admin" className="hover:underline">Dashboard</Link>
-                    </li>
-                    <li>
-                        <Link href="/admin/users" className="hover:underline">Manage Users</Link>
-                    </li>
-                    <li>
-                        <Link href="/admin/settings" className="hover:underline">Settings</Link>
-                    </li>
-                    <li className="pt-4 border-t border-gray-600">
-                        <button
-                            onClick={handleLogout}
-                            className="w-full text-left text-red-400 hover:text-red-300"
-                        >
-                            Logout
-                        </button>
-                    </li>
-                </ul>
-            </div>
-            </aside>
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("user");
 
-            {/* Main Content */}
-            <main className="flex-1 p-8 bg-gray-100">
-                {children}
-            </main>
-        </div>
-    );
+    router.replace("/");
+  };
 
+  return (
+    <div className="min-h-screen bg-[#FAFAFA] text-[#111111]">
+
+      {/* MATCH HOMEPAGE WIDTH + SPACING */}
+      <div className="max-w-6xl mx-auto px-6 py-10 flex gap-10">
+
+        {/* Sidebar */}
+        <aside className="w-64 bg-white p-6 shadow-sm border rounded-lg h-fit">
+          <h2 className="text-xl font-bold mb-6 text-gray-900">Admin Panel</h2>
+
+          <ul className="space-y-3 text-gray-700 text-[16px]">
+            <li>
+              <Link href="/admin" className="block px-3 py-2 rounded hover:bg-gray-100">
+                Dashboard
+              </Link>
+            </li>
+            <li>
+              <Link href="/admin/users" className="block px-3 py-2 rounded hover:bg-gray-100">
+                Manage Users
+              </Link>
+            </li>
+            <li>
+              <Link href="/admin/settings" className="block px-3 py-2 rounded hover:bg-gray-100">
+                Settings
+              </Link>
+            </li>
+
+            <li className="pt-4 border-t">
+              <button
+                onClick={handleLogout}
+                className="w-full text-left text-red-500 hover:text-red-600 cursor-pointer"
+              >
+                Logout
+              </button>
+            </li>
+          </ul>
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 space-y-10">
+          {children}
+        </main>
+
+      </div>
+    </div>
+  );
 }

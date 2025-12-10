@@ -55,6 +55,7 @@ export default function LoginPage() {
 
       if (!response.ok) {
         alert(result.error || "Login failed");
+        setLoading(false);
         return;
       }
 
@@ -74,6 +75,7 @@ export default function LoginPage() {
       // If token returned directly  
       if (!result.user) {
         alert("User data missing from response");
+        setLoading(false);
         return;
       }
 
@@ -96,9 +98,11 @@ export default function LoginPage() {
         return;
       }
       alert("Unexpected response from server.");
+      setLoading(false);
     } catch (error) {
       console.error("Login error:", error);
       alert("Something went wrong!");
+      setLoading(false);
     }
   };
 

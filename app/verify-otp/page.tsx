@@ -70,7 +70,7 @@ export default function VerifyOtpPage() {
             
               // Redirect based on role
               if (role === "admin") {
-                router.push("/admin/dashboard");
+                router.push("/dashboard");
               } else {
                 router.push("/user/dashboard");
               }

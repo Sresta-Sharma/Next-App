@@ -6,7 +6,14 @@ export default function WriteStoryButton() {
   const router = useRouter();
 
   const handleClick = () => {
-    const user = JSON.parse(localStorage.getItem("user") || "null");
+   let user = null;
+
+   try{
+    const raw = localStorage.getItem("user");
+    user = raw ? JSON.parse(raw) : null;
+   } catch(err) {
+    user = null;
+   }
 
     if (!user) {
       router.push("/login");
