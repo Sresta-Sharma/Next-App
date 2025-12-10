@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SubmitHandler, useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 
 type OTPInputs = {
     otp: string;
@@ -27,7 +28,7 @@ export default function VerifyOtpPage() {
         const purpose = localStorage.getItem("pending_purpose"); // login or reset
         
         if (!email || !purpose) {
-            alert("Missing verification data! Restart the process.");
+            toast.error("Missing verification data! Restart the process.");
             setLoading(false);
             return;
         }
@@ -48,7 +49,7 @@ export default function VerifyOtpPage() {
             const result = await res.json();
 
             if (!res.ok) {
-                alert(result.error || result.message || "Invalid OTP!");
+                toast.error(result.error || result.message || "Invalid OTP!");
                 setLoading(false);
                 return;
             }
@@ -65,7 +66,7 @@ export default function VerifyOtpPage() {
 
               const role = result.user.role?.toLowerCase();
 
-              alert("Login successful!");
+              toast.success("Login successful!");
               setLoading(false);
             
               // Redirect based on role
@@ -86,16 +87,16 @@ export default function VerifyOtpPage() {
               // remove purpose but keep pending_email since we'll use it in reset
               localStorage.removeItem("pending_purpose");
 
-              alert("OTP verified. You may now reset your password.");
+              toast.success("OTP verified. You may now reset your password.");
               setLoading(false);
               router.push("/reset-password");
               return;
             }
 
-            alert("Unexpected response from server!");
+            toast.error("Unexpected response from server!");
           } catch(err){
             console.log(err);
-            alert("Something went wrong. Try again!");
+            toast.error("Something went wrong. Try again!");
         }
 
         setLoading(false);

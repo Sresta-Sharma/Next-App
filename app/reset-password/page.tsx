@@ -3,6 +3,7 @@
 import { useForm, SubmitHandler } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 type ResetInputs = {
   password: string;
@@ -27,7 +28,7 @@ export default function ResetPasswordPage() {
 
   const onSubmit: SubmitHandler<ResetInputs> = async (data) => {
     if (data.password !== data.confirmPassword) {
-      alert("Passwords do not match");
+      toast.error("Passwords do not match");
       return;
     }
 
@@ -35,7 +36,7 @@ export default function ResetPasswordPage() {
     const otp = localStorage.getItem("pending_reset_otp");
 
     if (!email || !otp){
-      alert("Verification missing! Restart reset process.");
+      toast.error("Verification missing! Restart reset process.");
       return;
     }
 
@@ -55,7 +56,7 @@ export default function ResetPasswordPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        alert(result.error || result.message || "Password reset failed");
+        toast.error(result.error || result.message || "Password reset failed");
         setLoading(false);
         return;
       }
@@ -64,12 +65,12 @@ export default function ResetPasswordPage() {
       localStorage.removeItem("pending_email");
       localStorage.removeItem("pending_reset_otp");
 
-      alert("Password reset successful! Please login.");
+      toast.success("Password reset successful! Please login.");
       router.push("/login");
 
     } catch (error) {
       console.error("Reset error:", error);
-      alert("Something went wrong!");
+      toast.error("Something went wrong!");
     }
 
     setLoading(false);

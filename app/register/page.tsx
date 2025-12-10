@@ -3,6 +3,7 @@
 import { useForm, SubmitHandler } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 type RegisterInputs = {
   name: string;
@@ -33,7 +34,7 @@ export default function RegisterPage() {
 
   const onSubmit: SubmitHandler<RegisterInputs> = async (data) => {
     if (data.password !== data.confirmPassword) {
-      alert("Passwords do not match");
+    toast.error("Passwords do not match");
       return;
     }
 
@@ -55,17 +56,17 @@ export default function RegisterPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        alert(result.error || "Registration failed");
+        toast.error(result.error || "Registration failed");
         setLoading(false);
         return;
       }
 
-      alert("Registration successful! Please login.");
+      toast.success("Registration successful! Please login.");
 
       router.push("/login");
     } catch (err) {
       console.error("Registration error:", err);
-      alert("Something went wrong.");
+      toast.error("Something went wrong.");
     }
 
     setLoading(false);
@@ -111,7 +112,7 @@ export default function RegisterPage() {
               {...register("email", {
                 required: "Email is required",
                 pattern: {
-                  value: /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
+                  value: /^[A-Za-z0-9](?!.*\.\.)[A-Za-z0-9._-]*[A-Za-z0-9]@[A-Za-z0-9-]+\.[A-Za-z]{2,}$/,
                   message: "Invalid email",
                 },
               })}

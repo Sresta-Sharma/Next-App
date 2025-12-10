@@ -44,7 +44,7 @@ router.get("/me", protect, (req, res) => {
 });
 
 // Admin: Update Profile
-router.put("/update-profile", protect, verifyAdmin, updateProfile);
+router.put("/update-profile", protect, updateProfile);
 
 // Admin: Change Password
 router.put("/change-password", protect, verifyAdmin, changePassword);

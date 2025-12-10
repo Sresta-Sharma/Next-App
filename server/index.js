@@ -30,6 +30,11 @@ app.use("/api/auth", authRoutes)
 const blogRoutes = require("./routes/blogRoutes");
 app.use("/api/blog", blogRoutes)
 
+// Import subscribe routes
+const subscribeRoutes = require("./routes/subscribeRoutes");
+app.use("/api/subscribe", subscribeRoutes);
+
+
 //Root /
 app.get("/", (req, res) => {
     res.send("Backend server is running!");

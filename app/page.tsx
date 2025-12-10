@@ -1,7 +1,7 @@
 import Link from "next/link";
 import BlogCard from "./components/blogCard";
 import WriteStoryButton from "./components/writeStoryButton";
-
+import SubscribeBox from "./components/subscribeBox";
 
 async function getBlogs() {
   try {
@@ -146,19 +146,7 @@ export default async function HomePage(){
               Get new stories in your inbox.
             </p>
 
-            <form className="mt-4 flex items-center gap-2">
-              <input
-                type="email"
-                placeholder="Your email"
-                className="flex-1 px-3 py-2 rounded-full border border-gray-200 text-sm"
-              />
-              <button
-                type="submit"
-                className="px-4 py-2 rounded-full bg-[#111111] text-white text-sm"
-              >
-                Subscribe
-              </button>
-            </form>
+            <SubscribeBox/>
           </section>
         </aside>
       </div>

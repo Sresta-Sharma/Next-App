@@ -11,9 +11,6 @@ const protect = (req, res, next) => {
 
     console.log("HEX SECRET:", Buffer.from(process.env.JWT_ACCESS_SECRET).toString("hex"));
     console.log("LENGTH:", process.env.JWT_ACCESS_SECRET.length);
-
-
-
     
     try{
         // Verify and decode token

@@ -3,6 +3,7 @@
 import { useForm, SubmitHandler } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 type LoginInputs = {
   identifier: string; // email
@@ -54,7 +55,7 @@ export default function LoginPage() {
       console.log("LOGIN RESPONSE:", result);
 
       if (!response.ok) {
-        alert(result.error || "Login failed");
+        toast.error(result.error || "Login failed");
         setLoading(false);
         return;
       }
@@ -62,11 +63,11 @@ export default function LoginPage() {
       // As backend requires OTP
       if (result.step === "OTP_REQUIRED") {
           
-          // Sve email + purpose for verify-otp
+          // Save email + purpose for verify-otp
           localStorage.setItem("pending_email", data.identifier);
           localStorage.setItem("pending_purpose", "login");
           
-          alert("OTP sent to your email! Please verify!");
+          toast.success("OTP sent to your email! Please verify!");
           setLoading(false);
           router.push("/verify-otp");
           return; // VERY IMPORTANT
@@ -74,7 +75,7 @@ export default function LoginPage() {
       
       // If token returned directly  
       if (!result.user) {
-        alert("User data missing from response");
+        toast.error("User data missing from response");
         setLoading(false);
         return;
       }
@@ -87,7 +88,7 @@ export default function LoginPage() {
         // Store user
         localStorage.setItem("user", JSON.stringify(result.user));
 
-        alert("Login successful!");
+        toast.success("Login successful!");
         setLoading(false);
 
         if (result.user.role === "admin") {
@@ -97,11 +98,11 @@ export default function LoginPage() {
         }
         return;
       }
-      alert("Unexpected response from server.");
+      toast.error("Unexpected response from server.");
       setLoading(false);
     } catch (error) {
       console.error("Login error:", error);
-      alert("Something went wrong!");
+      toast.error("Something went wrong!");
       setLoading(false);
     }
   };

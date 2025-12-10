@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 export default function ManageUsers() {
     type User = {
@@ -16,7 +17,12 @@ export default function ManageUsers() {
     const router = useRouter();
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
+        // Wait until AdminLayout sets "user"
+        const storedUser = localStorage.getItem("user");
+        if (!storedUser) return; // prevent early redirect
+
+        
+        const token = localStorage.getItem("accessToken");
 
         if (!token) {
             router.replace("/login");
@@ -36,12 +42,11 @@ export default function ManageUsers() {
     const handleDelete = async (id: number) => {
         
         // Prevent deleting oneself
-        
         const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
         const currentUserId = currentUser.user_id;
         
         if (id === currentUserId) {
-            alert("You cannot delete your own account.");
+            toast.error("You cannot delete your own account.");
             return;
         }
         
@@ -58,12 +63,12 @@ export default function ManageUsers() {
         const data = await res.json();
 
         if (data.success) {
-            alert("User deleted successfully.");
+            toast.success("User deleted successfully.");
             
             // Remove from UI
             setUsers(users.filter((user: any) => user.user_id !== id));
         } else {
-            alert(data.error || "Failed to delete user.");
+            toast.error(data.error || "Failed to delete user.");
         }
         } catch (error) {
             console.error(error);
@@ -74,18 +79,17 @@ export default function ManageUsers() {
     const handleUpdateRole = async (id: number) => {
 
         // Prevent changing own role
-        
         const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
         const currentUserId = currentUser.user_id;
         if (id === currentUserId) {
-            alert("You cannot change your own role.");
+            toast.error("You cannot change your own role.");
             return;
         }
 
         const newRole = prompt("Enter new role (user/admin):");
         
         if (!newRole || !["user", "admin"].includes(newRole)) {
-            alert("Invalid role.");
+            toast.error("Invalid role.");
             return;
         }
 
@@ -102,7 +106,7 @@ export default function ManageUsers() {
             const data = await res.json();
 
             if (data.success) {
-                alert("User role updated successfully.");
+                toast.success("User role updated successfully.");
 
                 // Update UI
                 setUsers(
@@ -111,7 +115,7 @@ export default function ManageUsers() {
                 )
     );
             } else {
-                alert(data.error || "Failed to update user role.");
+                toast.error(data.error || "Failed to update user role.");
             }
         } catch (error) {
             console.error(error);
@@ -119,51 +123,53 @@ export default function ManageUsers() {
     };
 
     return (
-    <div>
-      <h1 className="text-3xl font-bold mb-4">Manage Users</h1>
-      
-      <table className="w-full border">
+        <div className="flex justify-center mt-0">
+        <div className="w-full max-w-5xl bg-white p-6 rounded-xl shadow-sm border">
+        <h1 className="text-xl font-semibold mb-6">Manage Users</h1>
+
+
+        <table className="w-full border rounded-lg overflow-hidden">
         <thead>
-            <tr className="bg-gray-200">
-                <th className="p-2 border">ID</th>
-                <th className="p-2 border">Name</th>
-                <th className="p-2 border">Email</th>
-                <th className="p-2 border">Role</th>
-                <th className="p-2 border">Actions</th>
-                </tr>
-                </thead>     
+        <tr className="bg-gray-100 text-gray-700 text-sm">
+        <th className="p-3 border">ID</th>
+        <th className="p-3 border">Name</th>
+        <th className="p-3 border">Email</th>
+        <th className="p-3 border">Role</th>
+        <th className="p-3 border">Actions</th>
+        </tr>
+        </thead>
+
 
         <tbody>
-            {users.map((user: any) => (
-                <tr key={user.user_id}>
-                <td className="p-2 border">{user.user_id}</td>
-                <td className="p-2 border">{user.name}</td>
-                <td className="p-2 border">{user.email}</td>
-                <td className="p-2 border">{user.role}</td>
+        {users.map((user) => (
+        <tr key={user.user_id} className="text-sm">
+        <td className="p-3 border">{user.user_id}</td>
+        <td className="p-3 border">{user.name}</td>
+        <td className="p-3 border">{user.email}</td>
+        <td className="p-3 border">{user.role}</td>
 
-                {/* Action Buttons */}
-                <td className="p-2 border flex gap-2">
 
-                    {/* Delete Button */}
-                    <button
-                        className="bg-red-500 text-white px-2 py-1 rounded"
-                        onClick={() => handleDelete(user.user_id)}
-                    >
-                        Delete
-                    </button>
+        <td className="p-3 border flex gap-3">
+        <button
+        className="px-3 py-1 bg-[#111111] text-white rounded-full hover:opacity-95 transition"
+        onClick={() => handleDelete(user.user_id)}
+        >
+        Delete
+        </button>
 
-                    {/* Update role button */}
-                    <button
-                        className="bg-blue-500 text-white px-2 py-1 rounded"
-                        onClick={() => handleUpdateRole(user.user_id)}
-                        >
-                            Change Role
-                        </button>
-                </td>
-                </tr>
-            ))}   
-        </tbody> 
-      </table>
-    </div>
-  );
+
+        <button
+        className="px-3 py-1 border border-[#1A1A1A] rounded-full hover:bg-gray-50 transition"
+        onClick={() => handleUpdateRole(user.user_id)}
+        >
+        Change Role
+        </button>
+        </td>
+        </tr>
+        ))}
+        </tbody>
+        </table>
+        </div>
+        </div>
+        );
 }
