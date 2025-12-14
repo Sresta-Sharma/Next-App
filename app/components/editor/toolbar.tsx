@@ -25,15 +25,20 @@ type ToolbarProps = {
 function Button({
   children,
   onClick,
+  title,
 }: {
   children: React.ReactNode;
   onClick?: () => void;
+  title?: string;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="px-3 py-1 border rounded-md text-sm hover:bg-[#F3F3F3] transition"
+      title={title}
+      className="px-3 py-1 border rounded-md text-sm
+                 cursor-pointer
+               hover:bg-[#F3F3F3] transition"
     >
       {children}
     </button>
@@ -139,7 +144,7 @@ export default function Toolbar({ uploadUrl }: ToolbarProps) {
 
   const changeFontSize = useCallback(
     (delta: number) => {
-      const newSize = Math.max(12, Math.min(48, fontSize + delta));
+      const newSize = Math.max(12, Math.min(80, fontSize + delta));
       setFontSize(newSize);
 
       editor.update(() => {
@@ -182,28 +187,28 @@ export default function Toolbar({ uploadUrl }: ToolbarProps) {
       {/* Row 1 */}
       <div className="flex items-center gap-2">
         <div className="flex gap-2">
-          <Button onClick={() => setHeading(null)}>Normal</Button>
-          <Button onClick={() => setHeading(1)}>H1</Button>
-          <Button onClick={() => setHeading(2)}>H2</Button>
-          <Button onClick={() => setHeading(3)}>H3</Button>
+          <Button title="Normal Paragraph" onClick={() => setHeading(null)}>Normal</Button>
+          <Button title="Heading 1" onClick={() => setHeading(1)}>H1</Button>
+          <Button title="Heading 2" onClick={() => setHeading(2)}>H2</Button>
+          <Button title="Heading 3" onClick={() => setHeading(3)}>H3</Button>
         </div>
 
         <div className="ml-4 flex gap-2">
-          <Button
+          <Button title="Bullet List"
             onClick={() =>
               editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined)
             }
           >
             • List
           </Button>
-          <Button
+          <Button title="Numbered List"
             onClick={() =>
               editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined)
             }
           >
             1. List
           </Button>
-          <Button onClick={insertCodeBlock}>{`<>`}</Button>
+          <Button title="Insert CodeBlock" onClick={insertCodeBlock}>{`<>`}</Button>
         </div>
 
         <div className="ml-auto flex gap-2">
@@ -221,11 +226,11 @@ export default function Toolbar({ uploadUrl }: ToolbarProps) {
 
       {/* Row 2 */}
       <div className="flex items-center gap-2">
-        <Button onClick={() => execFormat("bold")}>B</Button>
-        <Button onClick={() => execFormat("italic")}>I</Button>
-        <Button onClick={() => execFormat("underline")}>U</Button>
-        <Button onClick={applySubscript}>X₂</Button>
-        <Button onClick={applySuperscript}>X³</Button>
+        <Button title="Bold" onClick={() => execFormat("bold")}>B</Button>
+        <Button title="Italic" onClick={() => execFormat("italic")}>I</Button>
+        <Button title="Underline" onClick={() => execFormat("underline")}>U</Button>
+        <Button title="Subscript" onClick={applySubscript}>X₂</Button>
+        <Button title="Superscript" onClick={applySuperscript}>X³</Button>
 
         <div className="ml-4 flex items-center gap-2">
           <Button onClick={() => changeFontSize(-2)}>-</Button>
@@ -234,10 +239,10 @@ export default function Toolbar({ uploadUrl }: ToolbarProps) {
         </div>
 
         <div className="ml-auto flex gap-2">
-          <Button onClick={() => align("left")}>Left</Button>
-          <Button onClick={() => align("center")}>Center</Button>
-          <Button onClick={() => align("right")}>Right</Button>
-          <Button onClick={() => align("justify")}>Justify</Button>
+          <Button title="Align Left" onClick={() => align("left")}>Left</Button>
+          <Button title="Align Center" onClick={() => align("center")}>Center</Button>
+          <Button title="Align Right" onClick={() => align("right")}>Right</Button>
+          <Button title="Justify Text" onClick={() => align("justify")}>Justify</Button>
         </div>
       </div>
     </div>

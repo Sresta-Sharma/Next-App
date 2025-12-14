@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import type { JSX } from "react";
+import type { DOMConversionMap } from "lexical";
+
 
 import {
   DecoratorNode,
@@ -39,6 +41,25 @@ class ImageNode extends DecoratorNode<JSX.Element> {
       node.__key
     );
   }
+
+  static importDOM(): DOMConversionMap | null {
+  return {
+    img: () => ({
+      conversion: (domNode: Node) => {
+        if (domNode instanceof HTMLImageElement) {
+          return {
+            node: $createImageNode({
+              src: domNode.src,
+              alt: domNode.alt,
+            }),
+          };
+        }
+        return null;
+      },
+      priority: 0,
+    }),
+  };
+}
 
   constructor(
     src: string,
