@@ -39,6 +39,12 @@ const theme = {
     listitem: "my-1",
   },
   code: "bg-gray-100 rounded px-2 py-1 font-mono text-sm",
+
+  text: {
+    bold: "font-bold",
+    italic: "italic",
+    underline: "underline",
+  },
 };
 
 type BlogEditorProps = {
@@ -124,6 +130,11 @@ export default function BlogEditor({
             border: 1px solid #ddd;
             cursor: pointer;
           }
+
+          .underline {
+            text-decoration: underline;
+          }
+
       `}
 
       </style>

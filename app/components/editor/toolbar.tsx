@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import {
   $getSelection,
@@ -10,6 +10,8 @@ import {
   $getRoot,
   type TextFormatType,
   type ElementFormatType,
+  COMMAND_PRIORITY_CRITICAL,
+  SELECTION_CHANGE_COMMAND,
 } from "lexical";
 import {
   INSERT_ORDERED_LIST_COMMAND,
@@ -26,19 +28,23 @@ function Button({
   children,
   onClick,
   title,
+  active = false,
 }: {
   children: React.ReactNode;
   onClick?: () => void;
   title?: string;
+  active?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       title={title}
-      className="px-3 py-1 border rounded-md text-sm
+      className={`px-3 py-1 border rounded-md text-sm
                  cursor-pointer
-               hover:bg-[#F3F3F3] transition"
+               hover:bg-[#F3F3F3] transition
+                 ${active ? "bg-black text-white" : "bg-white text-black"}
+               `}
     >
       {children}
     </button>
@@ -55,6 +61,34 @@ export default function Toolbar({ uploadUrl }: ToolbarProps) {
   const [editor] = useLexicalComposerContext();
   const [fontSize, setFontSize] = useState<number>(16);
 
+  // Track active text formats
+  const [isBold, setIsBold] = useState(false);
+  const [isItalic, setIsItalic] = useState(false);
+  const [isUnderline, setIsUnderline] = useState(false);
+  
+  // Listen to selection changes to update active styles
+  useEffect(() => {
+    return editor.registerCommand(
+      SELECTION_CHANGE_COMMAND,
+      () => {
+        editor.update(() => {
+          const selection = $getSelection();
+          if (!$isRangeSelection(selection)) {
+            setIsBold(false);
+            setIsItalic(false);
+            setIsUnderline(false);
+            return;
+          }
+          setIsBold(selection.hasFormat("bold"));
+          setIsItalic(selection.hasFormat("italic"));
+          setIsUnderline(selection.hasFormat("underline"));
+        });
+        return false; // allow other handlers
+      },
+      COMMAND_PRIORITY_CRITICAL
+    );
+  }, [editor]);
+  
   const execFormat = useCallback(
     (format: TextFormatType) => {
       editor.dispatchCommand(FORMAT_TEXT_COMMAND, format);
@@ -226,9 +260,9 @@ export default function Toolbar({ uploadUrl }: ToolbarProps) {
 
       {/* Row 2 */}
       <div className="flex items-center gap-2">
-        <Button title="Bold" onClick={() => execFormat("bold")}>B</Button>
-        <Button title="Italic" onClick={() => execFormat("italic")}>I</Button>
-        <Button title="Underline" onClick={() => execFormat("underline")}>U</Button>
+        <Button title="Bold" onClick={() => execFormat("bold")} active={isBold}>B</Button>
+        <Button title="Italic" onClick={() => execFormat("italic")} active={isItalic}>I</Button>
+        <Button title="Underline" onClick={() => execFormat("underline")} active={isUnderline}>U</Button>
         <Button title="Subscript" onClick={applySubscript}>X₂</Button>
         <Button title="Superscript" onClick={applySuperscript}>X³</Button>
 
