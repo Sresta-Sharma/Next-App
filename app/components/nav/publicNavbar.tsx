@@ -16,8 +16,18 @@ export default function PublicNavbar() {
   // Logout modal state
   const [showModal, setShowModal] = useState(false);
 
-  const isActive = (path: string) =>
-    pathname === path ? "text-black font-semibold" : "text-gray-700";
+  const isActive = (path: string) => {
+  // Exact match only for homepage
+  if (path === "/") {
+    return pathname === "/" ? "text-black font-semibold" : "text-gray-700";
+  }
+
+  // For all other routes
+  return pathname.startsWith(path)
+    ? "text-black font-semibold"
+    : "text-gray-700";
+};
+
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -96,7 +106,7 @@ export default function PublicNavbar() {
               <Link href="/login" className={isActive("/login")}>Login</Link>
             ) : (
               <>
-                <Link href="/write" className="text-gray-700">Write</Link>
+                <Link href="/write" className={isActive("/write")}>Write</Link>
 
                 <button
                   onClick={confirmLogout}
@@ -111,12 +121,12 @@ export default function PublicNavbar() {
                       ? router.push("/admin")
                       : router.push("/dashboard")
                   }
-                  className="flex items-center gap-1 cursor-pointer hover:opacity-80 transition"
+                  className={`flex items-center gap-1 cursor-pointer hover:opacity-80 transition ${isActive(user?.role === "admin" ? "/admin" : "/dashboard")}`}
                 >
                   <div className="w-9 h-9 rounded-full bg-gray-300 flex items-center justify-center text-sm font-semibold">
                     {user?.name ? user.name[0].toUpperCase() : "U"}
                   </div>
-                  <span className="font-medium text-gray-800">
+                  <span>
                     {user?.name}
                   </span>
                 </div>
@@ -148,11 +158,19 @@ export default function PublicNavbar() {
               </Link>
             ) : (
               <>
-                <Link href="/write" onClick={() => setOpen(false)} className="text-gray-700">
+                <Link href="/write" 
+                 onClick={() => setOpen(false)} 
+                 className={isActive("/write")}>
                   Write
                 </Link>
 
-                <div className="flex items-center gap-2 mt-1">
+                <div 
+                onClick={() =>
+                    user?.role === "admin"
+                      ? router.push("/admin")
+                      : router.push("/dashboard")
+                  }
+                className={`flex items-center gap-1 cursor-pointer hover:opacity-80 transition ${isActive(user?.role === "admin" ? "/admin" : "/dashboard")}`}>
                   <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-sm font-semibold">
                     {user?.name ? user.name[0].toUpperCase() : "U"}
                   </div>
