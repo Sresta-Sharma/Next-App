@@ -2,6 +2,7 @@
 
 import React, { useCallback, useState, useEffect } from "react";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { $setBlocksType } from "@lexical/selection";
 import {
   $getSelection,
   $isRangeSelection,
@@ -10,9 +11,10 @@ import {
   $getRoot,
   type TextFormatType,
   type ElementFormatType,
-  COMMAND_PRIORITY_CRITICAL,
-  SELECTION_CHANGE_COMMAND,
+  $createParagraphNode,
 } from "lexical";
+import { $createHeadingNode } from "@lexical/rich-text";
+import { $createCodeNode } from "@lexical/code";
 import {
   INSERT_ORDERED_LIST_COMMAND,
   INSERT_UNORDERED_LIST_COMMAND,
@@ -51,12 +53,6 @@ function Button({
   );
 }
 
-const HEADING_MAP: Record<number, ElementFormatType> = {
-  1: "h1" as ElementFormatType,
-  2: "h2" as ElementFormatType,
-  3: "h3" as ElementFormatType,
-};
-
 export default function Toolbar({ uploadUrl }: ToolbarProps) {
   const [editor] = useLexicalComposerContext();
   const [fontSize, setFontSize] = useState<number>(16);
@@ -94,29 +90,34 @@ export default function Toolbar({ uploadUrl }: ToolbarProps) {
   );
 
   const setHeading = useCallback(
-    (level: number | null) => {
-      editor.update(() => {
-        const selection = $getSelection();
-        if (!$isRangeSelection(selection)) return;
+  (level: number | null) => {
+    editor.update(() => {
+      const selection = $getSelection();
+      if (!$isRangeSelection(selection)) return;
 
-        if (level === null) {
-          // explicit cast to ElementFormatType
-          editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "paragraph" as ElementFormatType);
-        } else {
-          const el = HEADING_MAP[level];
-          if (el) {
-            editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, el);
-          }
-        }
-      });
-    },
-    [editor]
-  );
+      if (level === null) {
+        // Normal paragraph
+        $setBlocksType(selection, () => $createParagraphNode());
+      } else {
+        // H1 / H2 / H3
+        $setBlocksType(selection, () =>
+          $createHeadingNode(`h${level}` as "h1" | "h2" | "h3")
+        );
+      }
+    });
+  },
+  [editor]
+);
 
   const insertCodeBlock = useCallback(() => {
-    // 'code' is not a plain string of unknown type; cast explicitly
-    editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "code" as ElementFormatType);
-  }, [editor]);
+  editor.update(() => {
+    const selection = $getSelection();
+    if (!$isRangeSelection(selection)) return;
+
+    $setBlocksType(selection, () => $createCodeNode());
+  });
+}, [editor]);
+
 
   const insertImageFromFile = useCallback(
     async (file?: File) => {
