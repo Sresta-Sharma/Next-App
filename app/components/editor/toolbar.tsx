@@ -204,11 +204,9 @@ export default function Toolbar({ uploadUrl }: ToolbarProps) {
 
   const align = useCallback(
     (dir: "left" | "center" | "right" | "justify") => {
-      // ElementFormatType may not include 'align-left' by default across versions.
-      // Casting is explicit so TypeScript is satisfied.
       editor.dispatchCommand(
         FORMAT_ELEMENT_COMMAND,
-        (`align-${dir}` as unknown) as ElementFormatType
+        dir as ElementFormatType
       );
     },
     [editor]

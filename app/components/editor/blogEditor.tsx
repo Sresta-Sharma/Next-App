@@ -45,6 +45,13 @@ const theme = {
     italic: "italic",
     underline: "underline",
   },
+
+  textAlign: {
+    left: "text-left",
+    center: "text-center",
+    right: "text-right",
+    justify: "text-justify",
+  },
 };
 
 type BlogEditorProps = {
