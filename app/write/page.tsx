@@ -69,11 +69,11 @@ export default function WritePage() {
 
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10">
-      <div className="max-w-4xl mx-auto px-4">
+    <div className="min-h-screen bg-gray-50 py-10 max-sm:py-6">
+      <div className="max-w-4xl mx-auto px-4 max-sm:px-3">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-5xl font-bold text-black mb-8">
+          <h1 className="text-5xl font-bold text-black mb-8 max-sm:text-3xl max-sm:mb-6">
             Create a Blog
           </h1>
         </div>
@@ -92,6 +92,10 @@ export default function WritePage() {
             rounded-md px-4 py-3
             placeholder-gray-300
             focus:border-gray-300 focus:ring-0
+
+            max-sm:text-xl
+            max-sm:px-3
+            max-sm:py-2
           "
         />
         
@@ -99,16 +103,16 @@ export default function WritePage() {
         <BlogEditor onChange={setBody} />
 
         {/* Actions */}
-        <div className="mt-6 flex justify-end gap-3">
+        <div className="mt-6 flex justify-end gap-3 max-sm:flex-col">
           <button
-            className="px-5 py-2 rounded-full border border-[#1A1A1A] text-black hover:bg-gray-100 transition cursor-pointer"
+            className="px-5 py-2 rounded-full border border-[#1A1A1A] text-black hover:bg-gray-100 transition cursor-pointer max-sm:w-full"
             onClick={handleSaveDraft}
           >
             Save Draft
           </button>
 
           <button
-            className="px-5 py-2 rounded-full bg-[#111111] text-white text-sm hover:opacity-95 transition cursor-pointer"
+            className="px-5 py-2 rounded-full bg-[#111111] text-white text-sm hover:opacity-95 transition cursor-pointer max-sm:w-full"
             onClick={handlePublish}
           >
             Publish

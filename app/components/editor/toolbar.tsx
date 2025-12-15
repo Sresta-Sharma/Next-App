@@ -44,9 +44,10 @@ function Button({
       onClick={onClick}
       title={title}
       className={`px-3 py-1 border rounded-full text-sm
-                 cursor-pointer
-               hover:bg-[#F3F3F3] transition-colors duration-150
-                 ${active ? "bg-gray-900 text-white border-gray-900"
+                  max-sm:px-2 max-sm:text-xs
+                  cursor-pointer
+                hover:bg-[#F3F3F3] transition-colors duration-150
+                  ${active ? "bg-gray-900 text-white border-gray-900"
                      : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"}
                `}
     >
@@ -227,9 +228,9 @@ function updateFontSizeInStyle(style: string, fontSize: number): string {
   );
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 overflow-x-auto">
       {/* Row 1 */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <div className="flex gap-2">
           <Button title="Normal Paragraph" onClick={() => setHeading(null)}>Normal</Button>
           <Button title="Heading 1" onClick={() => setHeading(1)}>H1</Button>
@@ -255,7 +256,7 @@ function updateFontSizeInStyle(style: string, fontSize: number): string {
           <Button title="Insert CodeBlock" onClick={insertCodeBlock}>{`<>`}</Button>
         </div>
 
-        <div className="ml-auto flex gap-2">
+        <div className="ml-auto flex gap-2 max-sm:ml-0">
           <label className="px-3 py-1 border rounded-full text-sm cursor-pointer
                             bg-white text-gray-800 border-gray-300 hover:bg-gray-100
                             transition-colors duration-150">
@@ -271,7 +272,7 @@ function updateFontSizeInStyle(style: string, fontSize: number): string {
       </div>
 
       {/* Row 2 */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <Button title="Bold" onClick={() => execFormat("bold")} active={isBold}>B</Button>
         <Button title="Italic" onClick={() => execFormat("italic")} active={isItalic}>I</Button>
         <Button title="Underline" onClick={() => execFormat("underline")} active={isUnderline}>U</Button>
