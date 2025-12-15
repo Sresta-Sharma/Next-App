@@ -6,6 +6,7 @@ import { $setBlocksType } from "@lexical/selection";
 import {
   $getSelection,
   $isRangeSelection,
+  TextNode,
   FORMAT_TEXT_COMMAND,
   FORMAT_ELEMENT_COMMAND,
   $getRoot,
@@ -183,16 +184,28 @@ export default function Toolbar({ uploadUrl }: ToolbarProps) {
         const selection = $getSelection();
         if (!$isRangeSelection(selection)) return;
 
-        selection.getNodes().forEach((node) => {
-          try {
-            // @ts-ignore style setter that might exist on element nodes
-            node.setStyle && node.setStyle("font-size", `${newSize}px`);
-          } catch {}
-        });
+        const nodes = selection.getNodes();
+
+      nodes.forEach(node => {
+        if (node instanceof TextNode) {
+          const style = node.getStyle() || "";
+          // Update font-size in style string (or append)
+          const newStyle = updateFontSizeInStyle(style, newSize);
+          node.setStyle(newStyle);
+        }
       });
-    },
-    [editor, fontSize]
+    });
+  },
+  [editor, fontSize]
   );
+
+  // Helper function to update font-size in style string
+function updateFontSizeInStyle(style: string, fontSize: number): string {
+  // Remove existing font-size
+  const styleWithoutFontSize = style.replace(/font-size:\s*\d+px;?/gi, "");
+  // Append new font-size
+  return `${styleWithoutFontSize} font-size: ${fontSize}px;`.trim();
+}
 
   const applySubscript = useCallback(() => {
     execFormat("subscript");
