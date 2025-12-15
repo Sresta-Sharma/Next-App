@@ -28,12 +28,9 @@ export default function WritePage() {
       <div className="max-w-4xl mx-auto px-4">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-5xl font-bold text-gray-900">
+          <h1 className="text-4xl font-bold text-gray-900 mb-8">
             Create a Blog
           </h1>
-          <p className="text-small text-gray-500 mt-3">
-            Share your thoughts with the world!
-          </p>
         </div>
 
         {/* Editor */}
@@ -42,14 +39,14 @@ export default function WritePage() {
         {/* Actions */}
         <div className="mt-6 flex justify-end gap-3">
           <button
-            className="px-5 py-2 rounded-full border text-sm hover:bg-gray-100"
+            className="px-5 py-2 rounded-full border border-[#1A1A1A] text-gray-700 hover:bg-gray-50 transition"
             onClick={() => setContent("")}
           >
             Clear
           </button>
 
           <button
-            className="px-5 py-2 rounded-full bg-black text-white text-sm hover:bg-gray-800"
+            className="px-5 py-2 rounded-full bg-[#111111] text-white text-sm hover:opacity-95 transition"
             onClick={handlePublish}
           >
             Publish

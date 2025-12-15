@@ -145,15 +145,15 @@ export default function BlogEditor({
       `}
 
       </style>
-      <div className="bg-white rounded-xl border border-gray-300 shadow p-4">
+      <div className="bg-white rounded-xl border border-gray-300 shadow-sm p-4">
         <Toolbar uploadUrl={uploadUrl} />
 
-        <div className="mt-3 border rounded-md p-4 bg-white">
+        <div className="mt-3 border rounded-md p-4 bg-white border-gray-200">
           <RichTextPlugin
             contentEditable={
               <ContentEditable className="editor-input min-h-[300px] px-1 outline-none" />
             }
-            placeholder={<div className="text-gray-500">Write your story…</div>}
+            placeholder={<div className="text-gray-500">Share your thoughts with the world …</div>}
             ErrorBoundary={LexicalErrorBoundary}
           />
 

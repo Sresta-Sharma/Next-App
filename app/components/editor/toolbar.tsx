@@ -43,10 +43,11 @@ function Button({
       type="button"
       onClick={onClick}
       title={title}
-      className={`px-3 py-1 border rounded-md text-sm
+      className={`px-3 py-1 border rounded-full text-sm
                  cursor-pointer
-               hover:bg-[#F3F3F3] transition-colors duration-75
-                 ${active ? "bg-black text-white" : "bg-white text-black"}
+               hover:bg-[#F3F3F3] transition-colors duration-150
+                 ${active ? "bg-gray-900 text-white border-gray-900"
+                     : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"}
                `}
     >
       {children}
@@ -255,7 +256,9 @@ function updateFontSizeInStyle(style: string, fontSize: number): string {
         </div>
 
         <div className="ml-auto flex gap-2">
-          <label className="px-3 py-1 border rounded-md text-sm cursor-pointer hover:bg-[#F3F3F3]">
+          <label className="px-3 py-1 border rounded-full text-sm cursor-pointer
+                            bg-white text-gray-800 border-gray-300 hover:bg-gray-100
+                            transition-colors duration-150">
             Upload Image
             <input
               type="file"
@@ -277,7 +280,33 @@ function updateFontSizeInStyle(style: string, fontSize: number): string {
 
         <div className="ml-4 flex items-center gap-2">
           <Button onClick={() => changeFontSize(-2)}>-</Button>
-          <div className="text-sm px-2">{fontSize}px</div>
+          {/* Editable font size input */}
+          <input
+            type="number"
+            min={12}
+            max={80}
+            value={fontSize}
+            onChange={(e) => {
+              let val = parseInt(e.target.value);
+              if (isNaN(val)) val = 16;
+              val = Math.min(80, Math.max(12, val));
+              setFontSize(val);
+
+              editor.update(() => {
+                const selection = $getSelection();
+                if (!$isRangeSelection(selection)) return;
+
+                selection.getNodes().forEach((node) => {
+                  if (node instanceof TextNode) {
+                    const style = node.getStyle() || "";
+                    const newStyle = updateFontSizeInStyle(style, val);
+                    node.setStyle(newStyle);
+                  }
+                });
+              });
+            }}
+            className="w-12 text-center text-sm border border-gray-300 rounded px-1 py-0.5"
+          />
           <Button onClick={() => changeFontSize(2)}>+</Button>
         </div>
 
