@@ -18,7 +18,7 @@ import { CodeNode, CodeHighlightNode, registerCodeHighlighting } from "@lexical/
 
 // Lexical core
 import { $getRoot } from "lexical";
-import type { EditorState } from "lexical";
+import type { EditorState, SerializedEditorState } from "lexical";
 
 // Custom Features
 import Toolbar from "./toolbar";
@@ -56,7 +56,7 @@ const theme = {
 
 type BlogEditorProps = {
   initialHtml?: string;
-  onChange?: (text: string) => void;
+  onChange?: (state: SerializedEditorState) => void;
   readOnly?: boolean;
   uploadEndpoint?: string;
 };
@@ -94,7 +94,7 @@ export default function BlogEditor({
 
       editorState.read(() => {
         const root = $getRoot();
-        onChange(root.getTextContent());
+        onChange(editorState.toJSON());
       });
     },
     [onChange]
