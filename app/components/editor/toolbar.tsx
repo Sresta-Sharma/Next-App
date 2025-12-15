@@ -42,7 +42,7 @@ function Button({
       title={title}
       className={`px-3 py-1 border rounded-md text-sm
                  cursor-pointer
-               hover:bg-[#F3F3F3] transition
+               hover:bg-[#F3F3F3] transition-colors duration-75
                  ${active ? "bg-black text-white" : "bg-white text-black"}
                `}
     >
@@ -68,26 +68,23 @@ export default function Toolbar({ uploadUrl }: ToolbarProps) {
   
   // Listen to selection changes to update active styles
   useEffect(() => {
-    return editor.registerCommand(
-      SELECTION_CHANGE_COMMAND,
-      () => {
-        editor.update(() => {
-          const selection = $getSelection();
-          if (!$isRangeSelection(selection)) {
-            setIsBold(false);
-            setIsItalic(false);
-            setIsUnderline(false);
-            return;
-          }
-          setIsBold(selection.hasFormat("bold"));
-          setIsItalic(selection.hasFormat("italic"));
-          setIsUnderline(selection.hasFormat("underline"));
-        });
-        return false; // allow other handlers
-      },
-      COMMAND_PRIORITY_CRITICAL
-    );
-  }, [editor]);
+  return editor.registerUpdateListener(({ editorState }) => {
+    editorState.read(() => {
+      const selection = $getSelection();
+
+      if (!$isRangeSelection(selection)) {
+        setIsBold(false);
+        setIsItalic(false);
+        setIsUnderline(false);
+        return;
+      }
+
+      setIsBold(selection.hasFormat("bold"));
+      setIsItalic(selection.hasFormat("italic"));
+      setIsUnderline(selection.hasFormat("underline"));
+    });
+  });
+}, [editor]);
   
   const execFormat = useCallback(
     (format: TextFormatType) => {
