@@ -21,7 +21,7 @@ export default function BlogsPage() {
     async function fetchBlogs() {
       try {
         const res = await fetch(`${API}/api/blog`, {
-          cache: "no-store",
+          cache: "force-cache",
         });
 
         if (!res.ok) throw new Error("Failed to fetch blogs!");

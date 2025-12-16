@@ -23,7 +23,7 @@ export default function BlogReadPage() {
       try {
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/blogs/${id}`,
-          { cache: "no-store" }
+          { cache: "force-cache" }
         );
 
         const data = await res.json();
