@@ -55,7 +55,7 @@ const theme = {
 };
 
 type BlogEditorProps = {
-  initialHtml?: string;
+  initialState?: SerializedEditorState | null;
   onChange?: (state: SerializedEditorState) => void;
   readOnly?: boolean;
   uploadEndpoint?: string;
@@ -73,7 +73,7 @@ function CodeHighlighting() {
 }
 
 export default function BlogEditor({
-  initialHtml = "",
+  initialState,
   onChange,
   readOnly = false,
   uploadEndpoint,
@@ -86,6 +86,12 @@ export default function BlogEditor({
     onError(error: Error) {
       console.error("Lexical error:", error);
     },
+    editorState: initialState
+    ? (editor: any) => {
+        const parsedState = editor.parseEditorState(initialState);
+        editor.setEditorState(parsedState);
+      }
+    : undefined,
   };
 
   const handleChange = useCallback(

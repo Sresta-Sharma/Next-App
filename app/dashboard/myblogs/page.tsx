@@ -4,18 +4,22 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 
+const API = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 export default function MyBlogsPage() {
   const [blogs, setBlogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
 
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/blogs/my-blogs`,
+          `${API}/api/blog/me`,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+              Authorization: `Bearer ${token}`,
             },
           }
         );
@@ -38,13 +42,28 @@ export default function MyBlogsPage() {
     fetchBlogs();
   }, []);
 
+  const handleDelete = async (id: number) => {
+    if (!confirm("Delete this blog?")) return;
+
+
+    const res = await fetch(`${API}/api/blog/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+    });
+
+
+    if (!res.ok) return toast.error("Delete failed");
+    setBlogs((prev) => prev.filter((b) => b.blog_id !== id));
+    toast.success("Blog deleted");
+    };
+  
   return (
     <div className="max-w-4xl mx-auto p-6 mt-10 bg-white border rounded-xl shadow-sm">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold">My Blogs</h1>
 
         <Link
-          href="/dashboard/new"
+          href="/write"
           className="px-4 py-2 bg-black text-white rounded-full text-sm hover:opacity-90"
         >
           + Create Blog

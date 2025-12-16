@@ -25,7 +25,7 @@ export default function WriteStoryButton() {
   return (
     <button
       onClick={handleClick}
-      className="px-8 py-3 border border-[#1A1A1A] rounded-full hover:bg-gray-50 transition"
+      className="px-8 py-3 border border-[#1A1A1A] rounded-full hover:bg-gray-300 cursor-pointer transition "
     >
       Write a Story
     </button>

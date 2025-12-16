@@ -1,15 +1,32 @@
 // Write Page
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import BlogEditor from "@/app/components/editor/blogEditor";
 import toast from "react-hot-toast";
 import type { SerializedEditorState, SerializedElementNode } from "lexical";
 
 export default function WritePage() {
+  const router = useRouter();
+  
   const [title, setTitle] = useState("");
   const [body, setBody] = useState<SerializedEditorState | null>(null);
+  const [publishing, setPublishing] = useState(false);
 
+  useEffect(() => {
+    const draft = localStorage.getItem("blog_draft");
+    if (draft) {
+      try {
+        const parsed = JSON.parse(draft);
+        setTitle(parsed.title || "");
+        setBody(parsed.body || null);
+      } catch {
+        localStorage.removeItem("blog_draft");
+      }
+    }
+  }, []);
+  
   function isEditorEmpty(state: SerializedEditorState | null) {
   if (!state) return true;
 
@@ -29,7 +46,7 @@ export default function WritePage() {
   return false;
 }
   
-  const handlePublish = () => {
+  const handlePublish = async () => {
     if (!title.trim()) {
       toast.error("Title is required!");
       return;
@@ -40,14 +57,43 @@ export default function WritePage() {
       return;
     }
 
-    const blogPost = {
-      title,
-      body, // Lexical JSON
-    };
+    setPublishing(true);
 
-    console.log("Blog post: ",blogPost);
+    try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/blogs`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+        body: JSON.stringify({
+          title: title.trim(),
+          content: JSON.stringify(body),
+        }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      toast.error(data.error || "Failed to publish blog");
+      return;
+    }
+
+    // Success
     localStorage.removeItem("blog_draft");
-    toast.success("Blog content logged to console");
+    toast.success("Blog published successfully!");
+
+    router.push(`/blogs/${data.newBlog.blog_id}`);
+
+  } catch (error) {
+    console.error(error);
+    toast.error("Something went wrong!");
+  } finally{
+    setPublishing(false);
+  }
   };
 
   const handleSaveDraft = () => {
@@ -55,15 +101,13 @@ export default function WritePage() {
       toast.error("Nothing to save!");
       return;
     }
-
-    const draft = {
-      title,
-      body,
-      savedAt: new Date().toISOString(),
-    };
-
-    // TEMP: store locally (replace with API later)
-    localStorage.setItem("blog_draft", JSON.stringify(draft));
+    
+    localStorage.setItem("blog_draft", JSON.stringify({
+        title,
+        body,
+        savedAt: new Date().toISOString(),
+      }
+    ));
 
     toast.success("Draft saved!");
   };
@@ -115,8 +159,9 @@ export default function WritePage() {
           <button
             className="px-5 py-2 rounded-full bg-[#111111] text-white text-sm hover:opacity-95 transition cursor-pointer max-sm:w-full"
             onClick={handlePublish}
+            disabled={publishing}
           >
-            Publish
+            {publishing ? "Publishing..." : "Publish"}
           </button>
         </div>
       </div>

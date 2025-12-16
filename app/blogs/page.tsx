@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import BlogCard from "../components/blogCard";
 
+const API = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 type Blog = {
   blog_id: number;
   title: string;
-  content: string;
   created_at: string;
   author_name: string;
 };
@@ -19,11 +20,11 @@ export default function BlogsPage() {
   useEffect(() => {
     async function fetchBlogs() {
       try {
-        const res = await fetch("http://localhost:5000/blogs", {
+        const res = await fetch(`${API}/api/blog`, {
           cache: "no-store",
         });
 
-        if (!res.ok) throw new Error("Failed to fetch blogs");
+        if (!res.ok) throw new Error("Failed to fetch blogs!");
 
         const data = await res.json();
         setBlogs(data.blogs || []);
@@ -60,7 +61,9 @@ export default function BlogsPage() {
               <p className="text-gray-500 text-lg">No blogs found.</p>
             ) : (
               blogs.map((blog) => (
-                <BlogCard key={blog.blog_id} blog={blog} />
+                <Link key={blog.blog_id} href={`/blogs/${blog.blog_id}`}>
+                  <BlogCard blog={blog} />
+                  </Link>
               ))
             )}
           </section>

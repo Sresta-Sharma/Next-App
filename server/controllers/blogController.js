@@ -11,7 +11,7 @@ exports.createBlog = async (req, res) => {
     const userId = req.user.user_id;
     const { title, content } = req.body;
 
-    if (!title || !content) {
+    if (!title?.trim() || !content) {
         return res.status(400).json({ error: "Title and content are required!" });
     }
 
@@ -20,7 +20,7 @@ exports.createBlog = async (req, res) => {
             `INSERT INTO blogs (user_id, title, content) 
              VALUES ($1, $2, $3)
              RETURNING *`,
-            [userId, title, content]
+            [userId, title.trim(), content]
         );
 
         const newBlog = result.rows[0];
@@ -42,7 +42,7 @@ exports.getAllBlogs = async (req, res) => {
         const total = Number(totalRes.rows[0].count);
 
         const result = await pool.query(
-            `SELECT b.blog_id, b.title, b.content, b.created_at, b.updated_at, u.user_id AS author_id, u.name AS author_name 
+            `SELECT b.blog_id, b.title, b.created_at, u.name AS author_name 
              FROM blogs b
              JOIN users u ON b.user_id = u.user_id
              ORDER BY b.created_at DESC
@@ -105,13 +105,16 @@ exports.updateBlog = async (req, res) => {
             return res.status(403).json({ message: "Forbidden! Not authorized to update this blog." });
         }
 
+        const newTitle = title?.trim() || blog.title;
+        const newContent = content || blog.content;
+        
         // Update fields if provided
         const updated = await pool.query(
             `UPDATE blogs 
              SET title = $1, content = $2, updated_at = CURRENT_TIMESTAMP
              WHERE blog_id = $3
              RETURNING blog_id, user_id, title, content, created_at, updated_at`,
-            [title || blog.title, content || blog.content, blogId]
+            [newTitle, newContent, blogId]
         );
 
         return res.json({ message: "Blog updated", blog: updated.rows[0] });
