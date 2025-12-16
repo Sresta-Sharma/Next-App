@@ -1,18 +1,14 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import PublicNavbar from "./components/nav/publicNavbar";
 import Footer from "./components/nav/footer";
 import { Toaster } from "react-hot-toast";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: "--font-inter", // optional for Tailwind integration
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -27,7 +23,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#FAFAFA] text-[#111111]`}>
+      <body className={`${inter.variable} ${inter.variable} antialiased bg-[#FAFAFA] text-[#111111]`}>
         
         {/* 🔥 Shared Navbar (will appear on every page) */}
         <PublicNavbar />
