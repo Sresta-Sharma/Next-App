@@ -18,7 +18,7 @@ import { CodeNode, CodeHighlightNode, registerCodeHighlighting } from "@lexical/
 
 // Lexical core
 import { $getRoot } from "lexical";
-import type { EditorState } from "lexical";
+import type { EditorState, SerializedEditorState } from "lexical";
 
 // Custom Features
 import Toolbar from "./toolbar";
@@ -39,11 +39,24 @@ const theme = {
     listitem: "my-1",
   },
   code: "bg-gray-100 rounded px-2 py-1 font-mono text-sm",
+
+  text: {
+    bold: "font-bold",
+    italic: "italic",
+    underline: "underline",
+  },
+
+  textAlign: {
+    left: "text-left",
+    center: "text-center",
+    right: "text-right",
+    justify: "text-justify",
+  },
 };
 
 type BlogEditorProps = {
   initialHtml?: string;
-  onChange?: (text: string) => void;
+  onChange?: (state: SerializedEditorState) => void;
   readOnly?: boolean;
   uploadEndpoint?: string;
 };
@@ -81,7 +94,7 @@ export default function BlogEditor({
 
       editorState.read(() => {
         const root = $getRoot();
-        onChange(root.getTextContent());
+        onChange(editorState.toJSON());
       });
     },
     [onChange]
@@ -124,18 +137,29 @@ export default function BlogEditor({
             border: 1px solid #ddd;
             cursor: pointer;
           }
+
+          .underline {
+            text-decoration: underline;
+          }
+
       `}
 
       </style>
-      <div className="bg-white rounded-xl border border-gray-300 shadow p-4">
+      <div className="bg-white rounded-xl border border-gray-300 shadow-sm p-4 max-sm:p-3">
+        {/* Toolbar */}
+        <div className="sticky top-0 z-20 bg-white border-b border-gray-200 overflow-x-auto">
+          <div className="flex gap-2 flex-wrap py-2 max-sm:gap-1">
         <Toolbar uploadUrl={uploadUrl} />
+        </div>
+        </div>
 
-        <div className="mt-3 border rounded-md p-4 bg-white">
+        {/* Editor */}
+        <div className="mt-3 border rounded-md p-4 bg-white border-gray-200 max-sm:p-3">
           <RichTextPlugin
             contentEditable={
-              <ContentEditable className="editor-input min-h-[300px] px-1 outline-none" />
+              <ContentEditable className="editor-input min-h-[300px] px-1 outline-none max-sm:min-h-[220px] max-sm:text-sm" />
             }
-            placeholder={<div className="text-gray-500">Write your story…</div>}
+            placeholder={<div className="text-gray-500 text-base max-sm:text-sm">Share your thoughts with the world …</div>}
             ErrorBoundary={LexicalErrorBoundary}
           />
 

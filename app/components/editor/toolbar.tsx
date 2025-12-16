@@ -1,16 +1,21 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { $setBlocksType } from "@lexical/selection";
 import {
   $getSelection,
   $isRangeSelection,
+  TextNode,
   FORMAT_TEXT_COMMAND,
   FORMAT_ELEMENT_COMMAND,
   $getRoot,
   type TextFormatType,
   type ElementFormatType,
+  $createParagraphNode,
 } from "lexical";
+import { $createHeadingNode } from "@lexical/rich-text";
+import { $createCodeNode } from "@lexical/code";
 import {
   INSERT_ORDERED_LIST_COMMAND,
   INSERT_UNORDERED_LIST_COMMAND,
@@ -26,35 +31,60 @@ function Button({
   children,
   onClick,
   title,
+  active = false,
 }: {
   children: React.ReactNode;
   onClick?: () => void;
   title?: string;
+  active?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       title={title}
-      className="px-3 py-1 border rounded-md text-sm
-                 cursor-pointer
-               hover:bg-[#F3F3F3] transition"
+      className={`px-3 py-1 border rounded-full text-sm
+                  max-sm:px-2 max-sm:text-xs
+                  cursor-pointer
+                hover:bg-[#F3F3F3] transition-colors duration-150
+                  ${active ? "bg-gray-900 text-white border-gray-900"
+                     : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"}
+               `}
     >
       {children}
     </button>
   );
 }
 
-const HEADING_MAP: Record<number, ElementFormatType> = {
-  1: "h1" as ElementFormatType,
-  2: "h2" as ElementFormatType,
-  3: "h3" as ElementFormatType,
-};
-
 export default function Toolbar({ uploadUrl }: ToolbarProps) {
   const [editor] = useLexicalComposerContext();
   const [fontSize, setFontSize] = useState<number>(16);
 
+  // Track active text formats
+  const [isBold, setIsBold] = useState(false);
+  const [isItalic, setIsItalic] = useState(false);
+  const [isUnderline, setIsUnderline] = useState(false);
+  
+  // Listen to selection changes to update active styles
+  useEffect(() => {
+  return editor.registerUpdateListener(({ editorState }) => {
+    editorState.read(() => {
+      const selection = $getSelection();
+
+      if (!$isRangeSelection(selection)) {
+        setIsBold(false);
+        setIsItalic(false);
+        setIsUnderline(false);
+        return;
+      }
+
+      setIsBold(selection.hasFormat("bold"));
+      setIsItalic(selection.hasFormat("italic"));
+      setIsUnderline(selection.hasFormat("underline"));
+    });
+  });
+}, [editor]);
+  
   const execFormat = useCallback(
     (format: TextFormatType) => {
       editor.dispatchCommand(FORMAT_TEXT_COMMAND, format);
@@ -63,29 +93,34 @@ export default function Toolbar({ uploadUrl }: ToolbarProps) {
   );
 
   const setHeading = useCallback(
-    (level: number | null) => {
-      editor.update(() => {
-        const selection = $getSelection();
-        if (!$isRangeSelection(selection)) return;
+  (level: number | null) => {
+    editor.update(() => {
+      const selection = $getSelection();
+      if (!$isRangeSelection(selection)) return;
 
-        if (level === null) {
-          // explicit cast to ElementFormatType
-          editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "paragraph" as ElementFormatType);
-        } else {
-          const el = HEADING_MAP[level];
-          if (el) {
-            editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, el);
-          }
-        }
-      });
-    },
-    [editor]
-  );
+      if (level === null) {
+        // Normal paragraph
+        $setBlocksType(selection, () => $createParagraphNode());
+      } else {
+        // H1 / H2 / H3
+        $setBlocksType(selection, () =>
+          $createHeadingNode(`h${level}` as "h1" | "h2" | "h3")
+        );
+      }
+    });
+  },
+  [editor]
+);
 
   const insertCodeBlock = useCallback(() => {
-    // 'code' is not a plain string of unknown type; cast explicitly
-    editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "code" as ElementFormatType);
-  }, [editor]);
+  editor.update(() => {
+    const selection = $getSelection();
+    if (!$isRangeSelection(selection)) return;
+
+    $setBlocksType(selection, () => $createCodeNode());
+  });
+}, [editor]);
+
 
   const insertImageFromFile = useCallback(
     async (file?: File) => {
@@ -151,16 +186,28 @@ export default function Toolbar({ uploadUrl }: ToolbarProps) {
         const selection = $getSelection();
         if (!$isRangeSelection(selection)) return;
 
-        selection.getNodes().forEach((node) => {
-          try {
-            // @ts-ignore style setter that might exist on element nodes
-            node.setStyle && node.setStyle("font-size", `${newSize}px`);
-          } catch {}
-        });
+        const nodes = selection.getNodes();
+
+      nodes.forEach(node => {
+        if (node instanceof TextNode) {
+          const style = node.getStyle() || "";
+          // Update font-size in style string (or append)
+          const newStyle = updateFontSizeInStyle(style, newSize);
+          node.setStyle(newStyle);
+        }
       });
-    },
-    [editor, fontSize]
+    });
+  },
+  [editor, fontSize]
   );
+
+  // Helper function to update font-size in style string
+function updateFontSizeInStyle(style: string, fontSize: number): string {
+  // Remove existing font-size
+  const styleWithoutFontSize = style.replace(/font-size:\s*\d+px;?/gi, "");
+  // Append new font-size
+  return `${styleWithoutFontSize} font-size: ${fontSize}px;`.trim();
+}
 
   const applySubscript = useCallback(() => {
     execFormat("subscript");
@@ -172,20 +219,18 @@ export default function Toolbar({ uploadUrl }: ToolbarProps) {
 
   const align = useCallback(
     (dir: "left" | "center" | "right" | "justify") => {
-      // ElementFormatType may not include 'align-left' by default across versions.
-      // Casting is explicit so TypeScript is satisfied.
       editor.dispatchCommand(
         FORMAT_ELEMENT_COMMAND,
-        (`align-${dir}` as unknown) as ElementFormatType
+        dir as ElementFormatType
       );
     },
     [editor]
   );
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 overflow-x-auto">
       {/* Row 1 */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <div className="flex gap-2">
           <Button title="Normal Paragraph" onClick={() => setHeading(null)}>Normal</Button>
           <Button title="Heading 1" onClick={() => setHeading(1)}>H1</Button>
@@ -211,8 +256,10 @@ export default function Toolbar({ uploadUrl }: ToolbarProps) {
           <Button title="Insert CodeBlock" onClick={insertCodeBlock}>{`<>`}</Button>
         </div>
 
-        <div className="ml-auto flex gap-2">
-          <label className="px-3 py-1 border rounded-md text-sm cursor-pointer hover:bg-[#F3F3F3]">
+        <div className="ml-auto flex gap-2 max-sm:ml-0">
+          <label className="px-3 py-1 border rounded-full text-sm cursor-pointer
+                            bg-white text-gray-800 border-gray-300 hover:bg-gray-100
+                            transition-colors duration-150">
             Upload Image
             <input
               type="file"
@@ -225,16 +272,42 @@ export default function Toolbar({ uploadUrl }: ToolbarProps) {
       </div>
 
       {/* Row 2 */}
-      <div className="flex items-center gap-2">
-        <Button title="Bold" onClick={() => execFormat("bold")}>B</Button>
-        <Button title="Italic" onClick={() => execFormat("italic")}>I</Button>
-        <Button title="Underline" onClick={() => execFormat("underline")}>U</Button>
+      <div className="flex items-center gap-2 flex-wrap">
+        <Button title="Bold" onClick={() => execFormat("bold")} active={isBold}>B</Button>
+        <Button title="Italic" onClick={() => execFormat("italic")} active={isItalic}>I</Button>
+        <Button title="Underline" onClick={() => execFormat("underline")} active={isUnderline}>U</Button>
         <Button title="Subscript" onClick={applySubscript}>X₂</Button>
         <Button title="Superscript" onClick={applySuperscript}>X³</Button>
 
         <div className="ml-4 flex items-center gap-2">
           <Button onClick={() => changeFontSize(-2)}>-</Button>
-          <div className="text-sm px-2">{fontSize}px</div>
+          {/* Editable font size input */}
+          <input
+            type="number"
+            min={12}
+            max={80}
+            value={fontSize}
+            onChange={(e) => {
+              let val = parseInt(e.target.value);
+              if (isNaN(val)) val = 16;
+              val = Math.min(80, Math.max(12, val));
+              setFontSize(val);
+
+              editor.update(() => {
+                const selection = $getSelection();
+                if (!$isRangeSelection(selection)) return;
+
+                selection.getNodes().forEach((node) => {
+                  if (node instanceof TextNode) {
+                    const style = node.getStyle() || "";
+                    const newStyle = updateFontSizeInStyle(style, val);
+                    node.setStyle(newStyle);
+                  }
+                });
+              });
+            }}
+            className="w-12 text-center text-sm border border-gray-300 rounded px-1 py-0.5"
+          />
           <Button onClick={() => changeFontSize(2)}>+</Button>
         </div>
 
