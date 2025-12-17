@@ -16,7 +16,7 @@ app.use(
   })
 );
 
-app.options("*");
+// app.options("*");
 app.use(json()); //Parse JSON bodies
 
 //To test if it works
