@@ -1,7 +1,7 @@
-import express, { json } from "express";
-import cors from "cors";
+const express = require("express");
+const cors = require("cors");
 require("dotenv").config();
-import { query } from "./db";
+const pool = require("./db");
 
 const app = express();
 
@@ -17,7 +17,7 @@ app.use(
   })
 );
 
-// app.options("*");
+app.options("*", cors());
 app.use(json()); //Parse JSON bodies
 
 //To test if it works
