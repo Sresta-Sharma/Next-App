@@ -10,6 +10,8 @@ export default function ForgotPasswordPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -17,10 +19,11 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/request-otp", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/request-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
+        cache: "no-store",
       });
 
       const data = await res.json();

@@ -20,6 +20,8 @@ export default function VerifyOtpPage() {
         formState : {errors},
     } = useForm<OTPInputs>();
 
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
+
     const onSubmit: SubmitHandler<OTPInputs> = async (data) => {
         setLoading(true);
 
@@ -34,7 +36,7 @@ export default function VerifyOtpPage() {
         }
 
         try{
-            const res = await fetch("http://localhost:5000/api/auth/verify-otp", {
+            const res = await fetch(`${API_BASE_URL}/api/auth/verify-otp`, {
                 method: "POST",
                 headers: {
                     "Content-Type" : "application/json",
@@ -44,6 +46,7 @@ export default function VerifyOtpPage() {
                     otp: data.otp,
                     purpose,  //backend expects "purpose"
                 }),
+                cache: "no-store",
             });
 
             const result = await res.json();
@@ -140,7 +143,7 @@ export default function VerifyOtpPage() {
           <button
             type="submit"
             className="w-full py-3 border border-[#1A1A1A] rounded-full 
-            text-sm font-medium hover:bg-gray-100 transition disabled:opacity-50"
+            text-sm font-medium hover:bg-gray-100 transition disabled:opacity-50 cursor-pointer"
             disabled={loading}
           >
             {loading ? "Verifying..." : "Verify OTP"}
