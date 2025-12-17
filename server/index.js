@@ -35,17 +35,16 @@ app.get("/api/test", async(req, res) => {
 });
 
 // Import auth routes
-import authRoutes from "./routes/authRoutes";
-app.use("/api/auth", authRoutes)
+const authRoutes = require("./routes/authRoutes");
+app.use("/api/auth", authRoutes);
 
 // Import blog routes
-import blogRoutes from "./routes/blogRoutes";
-app.use("/api/blog", blogRoutes)
+const blogRoutes = require("./routes/blogRoutes");
+app.use("/api/blog", blogRoutes);
 
 // Import subscribe routes
-import subscribeRoutes from "./routes/subscribeRoutes";
+const subscribeRoutes = require("./routes/subscribeRoutes");
 app.use("/api/subscribe", subscribeRoutes);
-
 
 //Root /
 app.get("/", (req, res) => {
