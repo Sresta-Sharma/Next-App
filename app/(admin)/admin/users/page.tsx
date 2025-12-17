@@ -29,7 +29,7 @@ export default function ManageUsers() {
             return;
         }
 
-        fetch("http://localhost:5000/api/auth/admin/users", {
+        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/admin/users`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },

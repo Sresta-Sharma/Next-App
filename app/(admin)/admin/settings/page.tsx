@@ -47,7 +47,7 @@ export default function SettingsPage() {
     const updatedData = { name, email, phone };
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/update-profile", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/update-profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

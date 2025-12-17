@@ -5,7 +5,19 @@ const pool = require("./db");
 
 const app = express();
 
-app.use(cors()); //Middleware
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://next-app-indol-one.vercel.app/", // ⬅️ replace with real domain
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
+
+app.options("*", cors());
 app.use(express.json()); //Parse JSON bodies
 
 //To test if it works
@@ -41,6 +53,6 @@ app.get("/", (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on port ${PORT}`);
 });
