@@ -1,7 +1,7 @@
-const express = require("express");
-const cors = require("cors");
+import express, { json } from "express";
+import cors from "cors";
 require("dotenv").config();
-const pool = require("./db");
+import { query } from "./db";
 
 const app = express();
 
@@ -17,13 +17,13 @@ app.use(
   })
 );
 
-app.options("*", cors());
-app.use(express.json()); //Parse JSON bodies
+// app.options("*");
+app.use(json()); //Parse JSON bodies
 
 //To test if it works
 app.get("/api/test", async(req, res) => {
     try{
-        const result = await pool.query("SELECT NOW()");
+        const result = await query("SELECT NOW()");
         res.json({
             message: "Server is running!",
             time: result.rows[0],
@@ -35,15 +35,15 @@ app.get("/api/test", async(req, res) => {
 });
 
 // Import auth routes
-const authRoutes = require("./routes/authRoutes");
+import authRoutes from "./routes/authRoutes";
 app.use("/api/auth", authRoutes)
 
 // Import blog routes
-const blogRoutes = require("./routes/blogRoutes");
+import blogRoutes from "./routes/blogRoutes";
 app.use("/api/blog", blogRoutes)
 
 // Import subscribe routes
-const subscribeRoutes = require("./routes/subscribeRoutes");
+import subscribeRoutes from "./routes/subscribeRoutes";
 app.use("/api/subscribe", subscribeRoutes);
 
 
