@@ -16,7 +16,7 @@ app.use(
   })
 );
 
-app.options("*", cors());
+app.options("*");
 app.use(json()); //Parse JSON bodies
 
 //To test if it works
@@ -50,7 +50,7 @@ app.get("/", (req, res) => {
     res.send("Backend server is running!");
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on port ${PORT}`);
 });
