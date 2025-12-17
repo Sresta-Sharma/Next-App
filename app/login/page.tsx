@@ -26,6 +26,8 @@ type LoginResponse = {
   error?: string;
 };
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
+
 export default function LoginPage() {
   const router = useRouter();
 
@@ -42,7 +44,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/login", {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -51,11 +53,11 @@ export default function LoginPage() {
         cache: "no-store",
       });
 
-      const result: LoginResponse = await response.json();
+      const result = (await response.json()) as LoginResponse;
       console.log("LOGIN RESPONSE:", result);
 
       if (!response.ok) {
-        toast.error(result.error || "Login failed");
+        toast.error(result.error || "Login failed!");
         setLoading(false);
         return;
       }
@@ -75,7 +77,7 @@ export default function LoginPage() {
       
       // If token returned directly  
       if (!result.user) {
-        toast.error("User data missing from response");
+        toast.error("User data missing from response!");
         setLoading(false);
         return;
       }
@@ -177,7 +179,7 @@ export default function LoginPage() {
               type="submit"
               disabled={loading}
               className="w-full py-3 border border-[#1A1A1A] rounded-full 
-            text-sm font-medium hover:bg-gray-100 transition disabled:opacity-50"
+            text-sm font-medium hover:bg-gray-100 transition disabled:opacity-50 cursor-pointer"
             >
               {loading ? "Logging in..." : "Login"}
             </button>

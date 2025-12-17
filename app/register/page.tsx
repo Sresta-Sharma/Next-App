@@ -14,6 +14,11 @@ type RegisterInputs = {
   confirmPassword: string;
 };
 
+type RegisterResponse = {
+  message?: string;
+  error?: string;
+};
+
 export default function RegisterPage() {
   const router = useRouter();
 
@@ -42,7 +47,7 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/register", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -53,10 +58,10 @@ export default function RegisterPage() {
         }),
       });
 
-      const result = await response.json();
+      const result = (await response.json()) as RegisterResponse;
 
       if (!response.ok) {
-        toast.error(result.error || "Registration failed");
+        toast.error(result?.error || "Registration failed!");
         setLoading(false);
         return;
       }
@@ -225,7 +230,7 @@ export default function RegisterPage() {
             type="submit"
             disabled={loading}
             className="w-full py-3 border border-[#1A1A1A] rounded-full 
-            text-sm font-medium hover:bg-gray-100 transition disabled:opacity-50"
+            text-sm font-medium hover:bg-gray-100 transition disabled:opacity-50 cursor-pointer"
           >
             {loading? "Creating account..." : "Register"}
           </button>
