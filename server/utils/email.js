@@ -8,9 +8,9 @@ const transporter = nodemailer.createTransport({
         user: process.env.MAIL_USER,
         pass: process.env.MAIL_PASS
     },
-    tls: {
-    rejectUnauthorized: false
-    }
+    connectionTimeout: 5000, // 5 seconds
+    greetingTimeout: 5000,
+    socketTimeout: 5000,
 });
 
 // Main function to send mail
