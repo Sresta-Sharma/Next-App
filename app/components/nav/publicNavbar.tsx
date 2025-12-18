@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export default function PublicNavbar() {
   const pathname = usePathname();
@@ -15,6 +15,9 @@ export default function PublicNavbar() {
 
   // Logout modal state
   const [showModal, setShowModal] = useState(false);
+
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   const isActive = (path: string) => {
   // Exact match only for homepage
@@ -35,6 +38,18 @@ export default function PublicNavbar() {
 
     setIsLoggedIn(!!token);
     setUser(storedUser ? JSON.parse(storedUser) : null);
+
+    const handleClickOutside = (e: MouseEvent) => {
+    if (
+      userMenuRef.current &&
+      !userMenuRef.current.contains(e.target as Node)
+    ) {
+      setShowUserMenu(false);
+    }
+  };
+
+  document.addEventListener("mousedown", handleClickOutside);
+  return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [pathname]);
 
   const confirmLogout = () => setShowModal(true);
@@ -108,27 +123,65 @@ export default function PublicNavbar() {
               <>
                 <Link href="/write" className={isActive("/write")}>Write</Link>
 
-                <button
-                  onClick={confirmLogout}
-                  className="cursor-pointer text-gray-700 hover:text-black transition"
-                >
-                  Logout
-                </button>
-
-                <div
-                  onClick={() =>
-                    user?.role === "admin"
-                      ? router.push("/admin")
-                      : router.push("/dashboard")
-                  }
-                  className={`flex items-center gap-1 cursor-pointer hover:opacity-80 transition ${isActive(user?.role === "admin" ? "/admin" : "/dashboard")}`}
-                >
-                  <div className="w-9 h-9 rounded-full bg-gray-300 flex items-center justify-center text-sm font-semibold">
-                    {user?.name ? user.name[0].toUpperCase() : "U"}
+                {/* USER MENU */}
+                <div className="relative" ref={userMenuRef}>
+                  <div
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    className="flex items-center gap-2 cursor-pointer hover:opacity-80"
+                  >
+                    <div className="w-9 h-9 rounded-full bg-gray-300 flex items-center justify-center text-sm font-semibold">
+                      {user?.name ? user.name[0].toUpperCase() : "U"}
+                    </div>
+                    <span>{user?.name}</span>
                   </div>
-                  <span>
-                    {user?.name}
-                  </span>
+
+                  {showUserMenu && (
+                    <div className="absolute right-0 mt-2 w-44 bg-white border rounded-xl shadow-lg z-50">
+                      <button
+                        onClick={() => {
+                          setShowUserMenu(false);
+                          router.push("/profile");
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                      >
+                        Profile
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setShowUserMenu(false);
+                          router.push("/my-blogs");
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                      >
+                        My Blogs
+                      </button>
+
+                      {user?.role === "admin" && (
+                        <button
+                          onClick={() => {
+                            setShowUserMenu(false);
+                            router.push("/admin");
+                          }}
+                          className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                        >
+                          Admin Panel
+                        </button>
+                      )}
+
+                      <hr />
+
+                      <button
+                        onClick={() => {
+                          setShowUserMenu(false);
+                          confirmLogout();
+                        }}
+                        className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  )}
                 </div>
               </>
             )}

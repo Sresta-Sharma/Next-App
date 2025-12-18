@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -39,7 +40,7 @@ export default function ForgotPasswordPage() {
       localStorage.setItem("pending_purpose", "reset");
 
 
-      setSuccess("OTP has been sent to your email");
+      toast.success("OTP has been sent to your email!");
       setLoading(false);
 
       // Redirect to verify otp
@@ -49,7 +50,7 @@ export default function ForgotPasswordPage() {
 
     } catch (err) {
       console.error("Forgot error: ",err);
-      setError("Failed to send OTP. Please try again.");
+      toast.error("Failed to send OTP. Please try again.");
       setLoading(false);
     }
   };
