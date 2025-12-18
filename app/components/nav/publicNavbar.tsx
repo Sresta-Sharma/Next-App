@@ -136,13 +136,13 @@ export default function PublicNavbar() {
                   </div>
 
                   {showUserMenu && (
-                    <div className="absolute right-0 mt-2 w-44 bg-white border rounded-xl shadow-lg z-50">
+                    <div className="absolute right-0 mt-3 w-52 bg-white rounded-2xl shadow-md border border-gray-100 z-50 overflow-hidden">
                       <button
                         onClick={() => {
                           setShowUserMenu(false);
                           router.push("/dashboard/profile");
                         }}
-                        className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                        className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition"
                       >
                         Profile
                       </button>
@@ -152,7 +152,7 @@ export default function PublicNavbar() {
                           setShowUserMenu(false);
                           router.push("/dashboard/myblogs");
                         }}
-                        className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                        className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition"
                       >
                         My Blogs
                       </button>
@@ -163,20 +163,20 @@ export default function PublicNavbar() {
                             setShowUserMenu(false);
                             router.push("/admin");
                           }}
-                          className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                          className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition"
                         >
                           Admin Panel
                         </button>
                       )}
 
-                      <hr />
+                      <div className="h-px bg-gray-100 mx-3" />
 
                       <button
                         onClick={() => {
                           setShowUserMenu(false);
                           confirmLogout();
                         }}
-                        className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
+                        className="w-full text-left px-5 py-3 text-sm text-red-600 hover:bg-red-50 transition"
                       >
                         Logout
                       </button>
