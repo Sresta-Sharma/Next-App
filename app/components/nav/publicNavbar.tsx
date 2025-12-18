@@ -88,7 +88,7 @@ export default function PublicNavbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center cursor-pointer">
             <Image
-              src="/logo.png"
+              src="/pic.png"
               alt="Logo"
               width={80}
               height={40}
