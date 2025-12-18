@@ -8,7 +8,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
-      "https://next-app-indol-one.vercel.app/", // ⬅️ replace with real domain
+      "https://next-app-indol-one.vercel.app",
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
