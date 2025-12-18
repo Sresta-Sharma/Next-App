@@ -69,7 +69,7 @@ export default function WritePage() {
 
     try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/blogs`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/blog`,
       {
         method: "POST",
         headers: {

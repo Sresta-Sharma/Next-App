@@ -5,7 +5,7 @@ import SubscribeBox from "./components/subscribeBox";
 
 async function getBlogs() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/blogs`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/blog`, {
       cache: "force-cache",
     });
 
