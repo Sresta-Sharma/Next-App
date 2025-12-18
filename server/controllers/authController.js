@@ -54,6 +54,7 @@ exports.registerUser = async (req, res) => {
 
 // Login (Step 1)
 exports.loginUser = async (req, res) => {
+    console.log("🔥 LOGIN API HIT 🔥", req.body);
     try {
     const { email, password } = req.body;
     if (!email || !password) {
