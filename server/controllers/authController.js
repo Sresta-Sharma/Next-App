@@ -124,6 +124,7 @@ exports.requestPasswordResetOtp = async (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiry = new Date(Date.now() + RESET_OTP_EXPIRES_MS);
 
+    console.log("LOGIN OTP:", otp);
     await pool.query(
         "UPDATE users SET otp_code = $1, otp_expiry = $2 WHERE email = $3", 
         [otp, expiry, email]);
