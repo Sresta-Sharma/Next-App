@@ -82,6 +82,7 @@ exports.loginUser = async (req, res) => {
 
     // Send OTP
     try {
+      await new Promise(resolve => setTimeout(resolve, 1200));
       await sendEmail(
         email,
         "Your Login OTP",
