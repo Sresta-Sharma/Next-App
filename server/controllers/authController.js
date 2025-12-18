@@ -54,8 +54,6 @@ exports.registerUser = async (req, res) => {
 
 // Login (Step 1)
 exports.loginUser = async (req, res) => {
-  console.log("SECRET USED DURING SIGN:", `"${process.env.JWT_ACCESS_SECRET}"`, process.env.JWT_ACCESS_SECRET.length);
-
     try {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -168,7 +166,7 @@ exports.verifyOtp = async (req, res) => {
         return res.status(400).json({ error: "Invalid OTP!" });
     }
 
-    if (new Date() > new Date(user.otp_expiry)) {
+    if (!user.otp_expiry || new Date() > new Date(user.otp_expiry)) {
         return res.status(400).json({ error: "OTP expired!" });
     }
 
@@ -178,7 +176,11 @@ exports.verifyOtp = async (req, res) => {
         "UPDATE users SET otp_code = NULL, otp_expiry = NULL WHERE email = $1", 
         [email]);
 
-      // Issue access + refresh tokens
+      if (!process.env.JWT_ACCESS_SECRET) {
+        return res.status(500).json({ error: "Server misconfiguration" });
+      }
+      
+        // Issue access + refresh tokens
       const accessToken = jwt.sign(
         { user_id: user.user_id, email: user.email, role: user.role },
         process.env.JWT_ACCESS_SECRET,
@@ -234,7 +236,7 @@ exports.resetPassword = async (req, res) => {
         return res.status(400).json({ error: "Invalid OTP" });
     }
 
-    if (new Date() > new Date(user.otp_expiry)) {
+    if (!user.otp_expiry || new Date() > new Date(user.otp_expiry)) {
         return res.status(400).json({ error: "OTP expired" });
     }
 
@@ -408,6 +410,11 @@ exports.refreshToken = async (req, res) => {
     }
 
     let decoded;
+
+    if (!process.env.JWT_REFRESH_SECRET) {
+      return res.status(500).json({ error: "Server misconfiguration" });
+    }
+
     try {
       decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
     } catch (err) {
@@ -421,6 +428,11 @@ exports.refreshToken = async (req, res) => {
     }
 
     const user = result.rows[0];
+    
+    if (!process.env.JWT_ACCESS_SECRET) {
+      return res.status(500).json({ error: "Server misconfiguration" });
+    }
+
     const newAccessToken = jwt.sign(
       { user_id: user.user_id, email: user.email, role: user.role },
       process.env.JWT_ACCESS_SECRET,
