@@ -15,6 +15,14 @@ export default function WritePage() {
   const [publishing, setPublishing] = useState(false);
 
   useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      router.replace("/login");
+    }
+  }, [router]);
+
+  
+  useEffect(() => {
     const draft = localStorage.getItem("blog_draft");
     if (draft) {
       try {
@@ -61,7 +69,7 @@ export default function WritePage() {
 
     try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/blogs`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/blogs`,
       {
         method: "POST",
         headers: {
