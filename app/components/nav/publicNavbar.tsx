@@ -140,7 +140,7 @@ export default function PublicNavbar() {
                       <button
                         onClick={() => {
                           setShowUserMenu(false);
-                          router.push("/profile");
+                          router.push("/dashboard/profile");
                         }}
                         className="w-full text-left px-4 py-2 hover:bg-gray-100"
                       >
@@ -150,7 +150,7 @@ export default function PublicNavbar() {
                       <button
                         onClick={() => {
                           setShowUserMenu(false);
-                          router.push("/my-blogs");
+                          router.push("/dashboard/myblogs");
                         }}
                         className="w-full text-left px-4 py-2 hover:bg-gray-100"
                       >
@@ -221,7 +221,7 @@ export default function PublicNavbar() {
                 onClick={() =>
                     user?.role === "admin"
                       ? router.push("/admin")
-                      : router.push("/dashboard")
+                      : router.push("/")
                   }
                 className={`flex items-center gap-1 cursor-pointer hover:opacity-80 transition ${isActive(user?.role === "admin" ? "/admin" : "/dashboard")}`}>
                   <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-sm font-semibold">
