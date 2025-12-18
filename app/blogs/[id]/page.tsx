@@ -14,24 +14,27 @@ type Blog = {
 };
 
 export default function BlogReadPage() {
-  const { id } = useParams();
+  const params = useParams();
+  const id = params?.id as string;
   const [blog, setBlog] = useState<Blog | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!id) return;
     const fetchBlog = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/blogs/${id}`,
-          { cache: "force-cache" }
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/blog/${id}`,
+          { cache: "no-store" }
         );
 
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
+        if (!res.ok) throw new Error(data?.error || "Failed to fetch blog");
 
         setBlog(data.blog);
       } catch (err) {
-        console.error(err);
+        console.error("Error fetching blog:", err);
+        setBlog(null);
       } finally {
         setLoading(false);
       }
