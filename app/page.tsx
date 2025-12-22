@@ -1,43 +1,53 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import BlogCard from "./components/blogCard";
 import WriteStoryButton from "./components/writeStoryButton";
 import SubscribeBox from "./components/subscribeBox";
 
-async function getBlogs() {
-  const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-  
-  if (!API_URL) {
-    console.error("NEXT_PUBLIC_API_BASE_URL is not defined");
-    return [];
-  }
+const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-  try {
-    const res = await fetch(`${API_URL}/api/blog`, {
-      cache: "no-store",
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+export default function HomePage() {
+  const [blogs, setBlogs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    if (!res.ok) {
-      console.error(`Failed to fetch blogs: ${res.status} ${res.statusText}`);
-      return [];
+  useEffect(() => {
+    async function fetchBlogs() {
+      if (!API_URL) {
+        console.error("NEXT_PUBLIC_API_BASE_URL is not defined");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/api/blog`, {
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!res.ok) {
+          console.error(`Failed to fetch blogs: ${res.status} ${res.statusText}`);
+          setLoading(false);
+          return;
+        }
+
+        const data = await res.json();
+        const blogList = Array.isArray(data) ? data : data.blogs ?? [];
+        setBlogs(blogList);
+      } catch (err) {
+        console.error("Error fetching blogs:", err);
+      } finally {
+        setLoading(false);
+      }
     }
 
-    const data = await res.json();
+    fetchBlogs();
+  }, []);
 
-    // extract array safely
-    return Array.isArray(data) ? data : data.blogs ?? [];
-  } catch (err) {
-    console.error("Error fetching blogs:", err);
-    return [];
-  }
-}
-
-export default async function HomePage(){
-  
-  const blogs = await getBlogs();
-  const latest = blogs.slice(0,5); // show only latest 5
+  const latest = blogs.slice(0, 5); // show only latest 5
   
   return(
     <main className="min-h-screen bg-[#FAFAFA] text-[#111111]">
@@ -81,7 +91,9 @@ export default async function HomePage(){
             <h2 className="text-2xl font-semibold mb-6">Latest Posts</h2>
 
             <div className="space-y-8">
-              {latest.length > 0 ? (
+              {loading ? (
+                <p className="text-gray-500">Loading posts...</p>
+              ) : latest.length > 0 ? (
                 latest.map((blog: any) => (
                   <BlogCard key={blog.blog_id} blog={blog} />
                 ))
