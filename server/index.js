@@ -1,13 +1,17 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
+const pool = require("./db");
 
 const app = express();
 
 app.use(
   cors({
     origin: [
+      // local dev
       "http://localhost:3000",
+      // backend self-call & prod
+      "http://localhost:5000",
       "https://next-app-indol-one.vercel.app",
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -22,7 +26,7 @@ app.use(express.json()); //Parse JSON bodies
 //To test if it works
 app.get("/api/test", async(req, res) => {
     try{
-        const result = await query("SELECT NOW()");
+    const result = await pool.query("SELECT NOW()");
         res.json({
             message: "Server is running!",
             time: result.rows[0],
@@ -50,7 +54,7 @@ app.get("/", (req, res) => {
     res.send("Backend server is running!");
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on port ${PORT}`);
 });

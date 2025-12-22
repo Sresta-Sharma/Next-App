@@ -10,7 +10,7 @@ interface Blog {
 export default function BlogCard({ blog }: { blog: Blog }) {
   return (
     <Link
-      href={`/blog/${blog.blog_id}`}
+      href={`/blogs/${blog.blog_id}`}
       className="block border-b pb-6 mb-6 hover:bg-gray-50 transition rounded-xl p-4"
     >
       <h2 className="text-2xl font-semibold text-black mb-2">

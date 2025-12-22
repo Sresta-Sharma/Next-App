@@ -40,7 +40,9 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const onSubmit: SubmitHandler<LoginInputs> = async (data) => {
+  const onSubmit: SubmitHandler<LoginInputs> = async (data, event) => {
+    // Extra guard to prevent default navigation/query params if JS hiccups
+    event?.preventDefault();
     setLoading(true);
 
     try {
@@ -118,7 +120,7 @@ export default function LoginPage() {
             Login
           </h2>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form method="post" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
             {/* Email */}
             <div>

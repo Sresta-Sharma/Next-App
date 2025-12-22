@@ -10,11 +10,16 @@ import type { EditorThemeClasses } from "lexical";
 const theme: EditorThemeClasses = {};
 
 export default function BlogViewer({ content }: { content: any }) {
+  const initializeEditorState = (editor: any) => {
+    const editorState = editor.parseEditorState(content);
+    editor.setEditorState(editorState);
+  };
+
   return (
     <LexicalComposer
       initialConfig={{
         namespace: "BlogViewer",
-        editorState: content,
+        editorState: initializeEditorState,
         editable: false,
         theme,
         onError(error) {
