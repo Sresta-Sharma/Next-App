@@ -19,9 +19,18 @@ export default function BlogsPage() {
 
   useEffect(() => {
     async function fetchBlogs() {
+      if (!API) {
+        console.error("NEXT_PUBLIC_API_BASE_URL is not defined");
+        setLoading(false);
+        return;
+      }
+
       try {
         const res = await fetch(`${API}/api/blog`, {
-          cache: "force-cache",
+          cache: "no-store",
+          headers: {
+            'Content-Type': 'application/json',
+          },
         });
 
         if (!res.ok) throw new Error("Failed to fetch blogs!");
@@ -29,7 +38,7 @@ export default function BlogsPage() {
         const data = await res.json();
         setBlogs(data.blogs || []);
       } catch (error) {
-        console.error(error);
+        console.error("Error fetching blogs:", error);
       } finally {
         setLoading(false);
       }

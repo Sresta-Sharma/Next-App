@@ -4,12 +4,25 @@ import WriteStoryButton from "./components/writeStoryButton";
 import SubscribeBox from "./components/subscribeBox";
 
 async function getBlogs() {
+  const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+  
+  if (!API_URL) {
+    console.error("NEXT_PUBLIC_API_BASE_URL is not defined");
+    return [];
+  }
+
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/blog`, {
+    const res = await fetch(`${API_URL}/api/blog`, {
       cache: "no-store",
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
 
-    if (!res.ok) return [];
+    if (!res.ok) {
+      console.error(`Failed to fetch blogs: ${res.status} ${res.statusText}`);
+      return [];
+    }
 
     const data = await res.json();
 
