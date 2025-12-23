@@ -1,4 +1,5 @@
 const pool = require("../db");
+const { sendBulkEmail } = require("../utils/email");
 
 // To check if user is author or admin
 const isOwnerOrAdmin = (user, ownerId) => {
@@ -24,12 +25,73 @@ exports.createBlog = async (req, res) => {
         );
 
         const newBlog = result.rows[0];
+
+        // Get author name for the email
+        const authorResult = await pool.query(
+            "SELECT name FROM users WHERE user_id = $1",
+            [userId]
+        );
+        const authorName = authorResult.rows[0]?.name || "Unknown Author";
+
+        // Send notification emails to all active subscribers (async, don't wait)
+        notifySubscribers(newBlog, authorName).catch(err => {
+            console.error("Error notifying subscribers:", err);
+        });
+
         return res.status(201).json({ message: "Blog created", newBlog });
     } catch(error){
         console.error("Error creating blog: ", error);
         return res.status(500).json({ error: "Internal Server Error!" });
     }
 };
+
+// Helper function to notify subscribers about new blog
+async function notifySubscribers(blog, authorName) {
+    try {
+        // Get all active subscribers
+        const subscribers = await pool.query(
+            "SELECT email FROM subscribers WHERE is_active = TRUE"
+        );
+
+        if (subscribers.rows.length === 0) {
+            console.log("No active subscribers to notify");
+            return;
+        }
+
+        const emails = subscribers.rows.map(row => row.email);
+        
+        // Create a short preview of the content (first 200 characters)
+        const contentPreview = blog.content
+            .replace(/<[^>]*>/g, '') // Remove HTML tags
+            .substring(0, 200) + '...';
+
+        const html = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #333;">New Blog Post Available!</h2>
+                <h3 style="color: #555;">${blog.title}</h3>
+                <p style="color: #666;">By ${authorName}</p>
+                <p style="color: #777; line-height: 1.6;">${contentPreview}</p>
+                <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/blogs/${blog.blog_id}" 
+                   style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; margin-top: 15px;">
+                    Read Full Article
+                </a>
+                <hr style="margin-top: 30px; border: none; border-top: 1px solid #ddd;">
+                <p style="color: #999; font-size: 12px;">
+                    You're receiving this email because you subscribed to Beautiful Mess.
+                </p>
+            </div>
+        `;
+
+        const subject = `New Post: ${blog.title}`;
+        
+        console.log(`Sending notifications to ${emails.length} subscribers...`);
+        const results = await sendBulkEmail(emails, subject, html);
+        console.log(`Notification results: ${results.success} sent, ${results.failed} failed`);
+    } catch (error) {
+        console.error("Error in notifySubscribers:", error);
+        throw error;
+    }
+}
 
 // Get all blog posts (with simple pagination)
 exports.getAllBlogs = async (req, res) => {

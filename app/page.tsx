@@ -169,7 +169,7 @@ export default function HomePage() {
 
           {/* SUBSCRIBE CTA */}
           <section className="bg-white p-6 rounded-lg shadow-sm text-center">
-            <h4 className="font-semibold">Subscribe</h4>
+            <h4 className="font-semibold hover:cursor-pointer">Subscribe</h4>
             <p className="mt-2 text-sm text-gray-600">
               Get new stories in your inbox.
             </p>

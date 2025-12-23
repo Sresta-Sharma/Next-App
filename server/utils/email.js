@@ -31,3 +31,44 @@ exports.sendEmail = async (to, subject, html) => {
         return false;
     }
 };
+
+// Function to send emails to multiple recipients (for blog notifications)
+exports.sendBulkEmail = async (recipients, subject, html) => {
+    const results = {
+        success: 0,
+        failed: 0,
+        errors: []
+    };
+
+    // Send emails in batches to avoid overwhelming the server
+    const batchSize = 10;
+    for (let i = 0; i < recipients.length; i += batchSize) {
+        const batch = recipients.slice(i, i + batchSize);
+        
+        const promises = batch.map(async (email) => {
+            try {
+                await transporter.sendMail({
+                    from: process.env.MAIL_FROM,
+                    to: email,
+                    subject,
+                    html
+                });
+                results.success++;
+            } catch (error) {
+                console.error(`Failed to send email to ${email}:`, error.message);
+                results.failed++;
+                results.errors.push({ email, error: error.message });
+            }
+        });
+
+        await Promise.all(promises);
+        
+        // Small delay between batches to avoid rate limiting
+        if (i + batchSize < recipients.length) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+    }
+
+    console.log(`Bulk email complete: ${results.success} sent, ${results.failed} failed`);
+    return results;
+};

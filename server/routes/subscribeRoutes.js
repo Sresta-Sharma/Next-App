@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { sendEmail } = require("../utils/email"); // adjust path
+const pool = require("../db");
 
 router.post("/", async (req, res) => {
     try {
@@ -8,6 +9,35 @@ router.post("/", async (req, res) => {
 
     if (!email) {
         return res.status(400).json({ success: false, message: "Email is required" });
+    }
+
+    // Check if email already exists
+    const existingSubscriber = await pool.query(
+        "SELECT * FROM subscribers WHERE email = $1",
+        [email]
+    );
+
+    if (existingSubscriber.rows.length > 0) {
+        const subscriber = existingSubscriber.rows[0];
+        
+        if (subscriber.is_active) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "This email is already subscribed!" 
+            });
+        }
+        
+        // Reactivate if previously unsubscribed
+        await pool.query(
+            "UPDATE subscribers SET is_active = TRUE, subscribed_at = CURRENT_TIMESTAMP WHERE email = $1",
+            [email]
+        );
+    } else {
+        // Insert new subscriber
+        await pool.query(
+            "INSERT INTO subscribers (email) VALUES ($1)",
+            [email]
+        );
     }
 
     const html = `
