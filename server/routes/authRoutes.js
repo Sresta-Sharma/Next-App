@@ -13,6 +13,7 @@ const { registerUser,
         deleteUser, 
         updateUserRole,
         changePassword,
+        deleteAccount,
         updateProfile,
         requestPasswordResetOtp,
         resetPassword,
@@ -47,7 +48,10 @@ router.get("/me", protect, (req, res) => {
 router.put("/update-profile", protect, updateProfile);
 
 // Admin: Change Password
-router.put("/change-password", protect, verifyAdmin, changePassword);
+router.put("/change-password", protect, changePassword);
+
+// User: Delete Account
+router.delete("/delete-account", protect, deleteAccount);
 
 // Admin: Protected Route:
 router.get("/admin/users", protect, verifyAdmin, getAllUsers);

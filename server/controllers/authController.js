@@ -29,7 +29,7 @@ exports.registerUser = async (req, res) => {
     const result = await pool.query(
       `INSERT INTO users (name, email, phone, password, role)
        VALUES ($1,$2,$3,$4,$5)
-       RETURNING user_id, name, email, phone, role`,
+       RETURNING user_id, name, email, phone, role, avatar`,
       [name, email, phone, hashed, "user"]
     );
 
@@ -44,7 +44,7 @@ exports.registerUser = async (req, res) => {
     }
 
     return res.status(201).json({ 
-        message: "User registered successfully!", user: result.rows[0] 
+      message: "User registered successfully!", user: result.rows[0] 
     });
   } catch (err) {
     console.error("registerUser error:", err);
@@ -208,6 +208,7 @@ exports.verifyOtp = async (req, res) => {
           email: user.email,
           phone: user.phone,
           role: user.role,
+          avatar: user.avatar,
         },
       });
     }
@@ -374,7 +375,7 @@ exports.updateProfile = async (req, res) => {
         return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const { name, phone, email } = req.body;
+    const { name, phone, email, avatar } = req.body;
 
     const userRes = await pool.query(
         "SELECT * FROM users WHERE user_id = $1", 
@@ -393,9 +394,21 @@ exports.updateProfile = async (req, res) => {
     }
 
     const updated = await pool.query(
-      `UPDATE users SET name = $1, email = $2, phone = $3 WHERE user_id = $4
-       RETURNING user_id, name, email, phone, role`,
-      [name || user.name, email || user.email, phone || user.phone, userId]
+      `UPDATE users 
+         SET name = $1, 
+             email = $2, 
+             phone = $3,
+             avatar = $4,
+             updated_at = CURRENT_TIMESTAMP
+       WHERE user_id = $5
+       RETURNING user_id, name, email, phone, role, avatar`,
+      [
+        name || user.name,
+        email || user.email,
+        phone || user.phone,
+        avatar !== undefined ? avatar : user.avatar,
+        userId,
+      ]
     );
 
     return res.json({ success: true, message: "Profile updated successfully!", user: updated.rows[0] });
@@ -446,6 +459,60 @@ exports.refreshToken = async (req, res) => {
     return res.json({ success: true, accessToken: newAccessToken });
   } catch (err) {
     console.error("refreshToken error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// Delete Account
+exports.deleteAccount = async (req, res) => {
+  try {
+    const userId = req.user && req.user.user_id;
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const { password } = req.body;
+    if (!password) {
+      return res.status(400).json({ error: "Password is required to delete account" });
+    }
+
+    const userRes = await pool.query("SELECT * FROM users WHERE user_id = $1", [userId]);
+    if (userRes.rows.length === 0) {
+      return res.status(404).json({ error: "User not found!" });
+    }
+
+    const user = userRes.rows[0];
+    const match = await bcrypt.compare(password, user.password);
+
+    if (!match) {
+      return res.status(400).json({ error: "Password is incorrect!" });
+    }
+
+    // Delete all user's blogs (cascade will happen if foreign key is set)
+    await pool.query("DELETE FROM blogs WHERE user_id = $1", [userId]);
+
+    // Delete all user's drafts
+    await pool.query("DELETE FROM drafts WHERE user_id = $1", [userId]);
+
+    // Remove user from subscribers if they are subscribed
+    await pool.query("DELETE FROM subscribers WHERE email = $1", [user.email]);
+
+    // Delete the user account
+    await pool.query("DELETE FROM users WHERE user_id = $1", [userId]);
+
+    try {
+      await sendEmail(
+        user.email,
+        "Account Deleted",
+        `<p>Your account and all associated data have been permanently deleted.</p>`
+      );
+    } catch (e) {
+      console.warn("Account deletion email failed:", e);
+    }
+
+    return res.json({ success: true, message: "Account deleted successfully!" });
+  } catch (err) {
+    console.error("deleteAccount error:", err);
     return res.status(500).json({ error: "Internal server error" });
   }
 };

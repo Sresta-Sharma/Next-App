@@ -70,84 +70,105 @@ export default function ProfilePage() {
     reader.readAsDataURL(file);
   };
 
-  if (!user) return <p className="p-6">Loading...</p>;
+  if (!user) return <p className="p-6 text-center text-gray-500">Loading...</p>;
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white shadow-sm rounded-xl border mt-10">
-      <h1 className="text-2xl font-semibold mb-6">My Profile</h1>
+    <main className="min-h-screen bg-[#FAFAFA]">
+      <div className="max-w-2xl mx-auto px-6 py-12">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-[#111111]">My Profile</h1>
+          <p className="text-gray-500 mt-2">Manage your account information here.</p>
+        </div>
 
-      {/* AVATAR */}
-      <div className="flex flex-col items-center mb-6">
-        <div className="relative w-28 h-28 rounded-full overflow-hidden border shadow-sm">
-          {avatar ? (
-            <Image src={avatar} alt="Avatar" fill className="object-cover" />
-          ) : (
-            <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm">
-              No Avatar
+        {/* Profile Card */}
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+          
+          {/* Avatar Section */}
+          <div className="border-b border-gray-200 p-8 flex flex-col items-center">
+            <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-gray-100 shadow-md mb-4">
+              {avatar ? (
+                <Image src={avatar} alt="Avatar" fill className="object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-gray-600 text-4xl font-semibold">
+                  {user?.name ? user.name[0].toUpperCase() : "U"}
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {isEditing && (
-          <label className="mt-3 text-sm cursor-pointer text-blue-600">
-            Change Avatar
-            <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
-          </label>
-        )}
+            {isEditing && (
+              <label className="mt-4 px-4 py-2 rounded-full border border-gray-300 text-sm cursor-pointer text-[#111111] hover:bg-gray-50 transition">
+                Upload Photo
+                <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+              </label>
+            )}
+          </div>
+
+          {/* Form Section */}
+          <div className="p-8">
+            <div className="space-y-6">
+              {/* Name Field */}
+              <div>
+                <label className="block text-sm font-semibold text-[#111111] mb-2">Full Name</label>
+                <input
+                  disabled={!isEditing}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className={`w-full px-4 py-3 rounded-lg text-sm border transition ${
+                    isEditing
+                      ? "border-gray-300 bg-white focus:border-gray-400 focus:ring-1 focus:ring-gray-200 outline-none"
+                      : "border-gray-200 bg-gray-50 cursor-not-allowed text-gray-700"
+                  }`}
+                />
+              </div>
+
+              {/* Email Field */}
+              <div>
+                <label className="block text-sm font-semibold text-[#111111] mb-2">Email Address</label>
+                <input
+                  disabled={!isEditing}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  type="email"
+                  className={`w-full px-4 py-3 rounded-lg text-sm border transition ${
+                    isEditing
+                      ? "border-gray-300 bg-white focus:border-gray-400 focus:ring-1 focus:ring-gray-200 outline-none"
+                      : "border-gray-200 bg-gray-50 cursor-not-allowed text-gray-700"
+                  }`}
+                />
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="mt-8 flex gap-3">
+              {!isEditing ? (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="px-6 py-3 bg-[#111111] text-white rounded-full text-sm font-semibold hover:opacity-90 transition cursor-pointer"
+                >
+                  Edit Profile
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={handleSave}
+                    className="px-6 py-3 bg-[#111111] text-white rounded-full text-sm font-semibold hover:opacity-90 transition cursor-pointer"
+                  >
+                    Save Changes
+                  </button>
+
+                  <button
+                    onClick={handleCancel}
+                    className="px-6 py-3 border border-gray-300 text-[#111111] rounded-full text-sm font-semibold hover:bg-gray-50 transition cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
-
-      {/* FORM FIELDS */}
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm text-gray-600 mb-1">Name</label>
-          <input
-            disabled={!isEditing}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md text-sm ${
-              isEditing ? "" : "bg-gray-100 cursor-not-allowed"
-            }`}
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm text-gray-600 mb-1">Email</label>
-          <input
-            disabled={!isEditing}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md text-sm ${
-              isEditing ? "" : "bg-gray-100 cursor-not-allowed"
-            }`}
-          />
-        </div>
-      </div>
-
-      {/* BUTTONS */}
-      {!isEditing ? (
-        <button
-          onClick={() => setIsEditing(true)}
-          className="mt-6 px-4 py-2 bg-black text-white rounded-full text-sm hover:opacity-90"
-        >
-          Edit Profile
-        </button>
-      ) : (
-        <div className="flex gap-3 mt-6">
-          <button
-            onClick={handleSave}
-            className="px-4 py-2 bg-black text-white rounded-full text-sm hover:opacity-90"
-          >
-            Save Changes
-          </button>
-
-          <button
-            onClick={handleCancel}
-            className="px-4 py-2 border rounded-full text-sm hover:bg-gray-50"
-          >
-            Cancel
-          </button>
-        </div>
-      )}
-    </div>
+    </main>
   );
 }

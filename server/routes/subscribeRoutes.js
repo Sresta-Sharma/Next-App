@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const { sendEmail } = require("../utils/email"); // adjust path
+const { sendEmail } = require("../utils/email");
+const protect = require("../middleware/authMiddleware");
 const pool = require("../db");
 
 router.post("/", async (req, res) => {
@@ -58,6 +59,112 @@ router.post("/", async (req, res) => {
         success: true,
         message: "Subscription email sent!"
     });
+    } catch (error) {
+        console.error("Subscribe Error:", error);
+        res.status(500).json({ success: false, message: "Something went wrong" });
+    }
+});
+
+// Get subscription status
+router.get("/status", protect, async (req, res) => {
+    try {
+        const userRes = await pool.query("SELECT email FROM users WHERE user_id = $1", [req.user.user_id]);
+        
+        if (userRes.rows.length === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        const email = userRes.rows[0].email;
+        const subRes = await pool.query(
+            "SELECT is_active FROM subscribers WHERE email = $1",
+            [email]
+        );
+
+        const isSubscribed = subRes.rows.length > 0 && subRes.rows[0].is_active;
+        return res.json({ isSubscribed });
+    } catch (error) {
+        console.error("Status Check Error:", error);
+        res.status(500).json({ success: false, message: "Something went wrong" });
+    }
+});
+
+// Unsubscribe
+router.post("/unsubscribe", protect, async (req, res) => {
+    try {
+        const userRes = await pool.query("SELECT email FROM users WHERE user_id = $1", [req.user.user_id]);
+        
+        if (userRes.rows.length === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        const email = userRes.rows[0].email;
+        
+        const subRes = await pool.query(
+            "SELECT * FROM subscribers WHERE email = $1",
+            [email]
+        );
+
+        if (subRes.rows.length === 0) {
+            return res.status(400).json({ success: false, message: "Not subscribed" });
+        }
+
+        await pool.query(
+            "UPDATE subscribers SET is_active = FALSE WHERE email = $1",
+            [email]
+        );
+
+        return res.json({ success: true, message: "Unsubscribed successfully!" });
+    } catch (error) {
+        console.error("Unsubscribe Error:", error);
+        res.status(500).json({ success: false, message: "Something went wrong" });
+    }
+});
+
+// Subscribe (for logged-in users)
+router.post("/subscribe", protect, async (req, res) => {
+    try {
+        const userRes = await pool.query("SELECT email FROM users WHERE user_id = $1", [req.user.user_id]);
+        
+        if (userRes.rows.length === 0) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        const email = userRes.rows[0].email;
+        
+        const existingSubscriber = await pool.query(
+            "SELECT * FROM subscribers WHERE email = $1",
+            [email]
+        );
+
+        if (existingSubscriber.rows.length > 0) {
+            const subscriber = existingSubscriber.rows[0];
+            
+            if (subscriber.is_active) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: "Already subscribed!" 
+                });
+            }
+            
+            await pool.query(
+                "UPDATE subscribers SET is_active = TRUE, subscribed_at = CURRENT_TIMESTAMP WHERE email = $1",
+                [email]
+            );
+        } else {
+            await pool.query(
+                "INSERT INTO subscribers (email) VALUES ($1)",
+                [email]
+            );
+        }
+
+        const html = `
+            <h2>Thank you for subscribing!</h2>
+            <p>You will receive updates whenever new stories are posted.</p>
+        `;
+
+        await sendEmail(email, "Beautiful Mess - Subscription Confirmed!", html);
+
+        return res.json({ success: true, message: "Subscribed successfully!" });
     } catch (error) {
         console.error("Subscribe Error:", error);
         res.status(500).json({ success: false, message: "Something went wrong" });

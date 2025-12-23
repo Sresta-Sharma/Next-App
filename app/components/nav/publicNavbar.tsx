@@ -82,14 +82,14 @@ export default function PublicNavbar() {
             <div className="mt-6 flex items-center justify-center gap-4">
               <button
                 onClick={() => setShowModal(false)}
-                className="px-4 py-2 rounded-full border border-gray-300 hover:bg-gray-100 transition text-sm"
+                className="px-4 py-2 rounded-full border border-gray-300 hover:bg-gray-100 transition text-sm cursor-pointer"
               >
                 Cancel
               </button>
 
               <button
                 onClick={logout}
-                className="px-6 py-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition text-sm"
+                className="px-6 py-2 rounded-full bg-red-500 text-white hover:bg-red-600 transition text-sm cursor-pointer"
               >
                 Logout
               </button>
@@ -129,9 +129,21 @@ export default function PublicNavbar() {
                     onClick={() => setShowUserMenu(!showUserMenu)}
                     className="flex items-center gap-2 cursor-pointer hover:opacity-80"
                   >
-                    <div className="w-9 h-9 rounded-full bg-gray-300 flex items-center justify-center text-sm font-semibold">
-                      {user?.name ? user.name[0].toUpperCase() : "U"}
-                    </div>
+                    {user?.avatar ? (
+                      <div className="w-9 h-9 rounded-full overflow-hidden border border-gray-200">
+                        <Image
+                          src={user.avatar}
+                          alt={user?.name || "Avatar"}
+                          width={36}
+                          height={36}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-gray-300 flex items-center justify-center text-sm font-semibold">
+                        {user?.name ? user.name[0].toUpperCase() : "U"}
+                      </div>
+                    )}
                     <span>{user?.name}</span>
                   </div>
 
@@ -142,7 +154,7 @@ export default function PublicNavbar() {
                           setShowUserMenu(false);
                           router.push("/dashboard/profile");
                         }}
-                        className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition"
+                        className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition cursor-pointer"
                       >
                         Profile
                       </button>
@@ -152,9 +164,29 @@ export default function PublicNavbar() {
                           setShowUserMenu(false);
                           router.push("/dashboard/myblogs");
                         }}
-                        className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition"
+                        className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition cursor-pointer"
                       >
                         My Blogs
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setShowUserMenu(false);
+                          router.push("/dashboard/drafts");
+                        }}
+                        className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition cursor-pointer"
+                      >
+                        Drafts
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setShowUserMenu(false);
+                          router.push("/dashboard/settings");
+                        }}
+                        className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition cursor-pointer"
+                      >
+                        Settings
                       </button>
 
                       {user?.role === "admin" && (
@@ -176,7 +208,7 @@ export default function PublicNavbar() {
                           setShowUserMenu(false);
                           confirmLogout();
                         }}
-                        className="w-full text-left px-5 py-3 text-sm text-red-600 hover:bg-red-50 transition"
+                        className="w-full text-left px-5 py-3 text-sm text-red-600 hover:bg-red-50 transition cursor-pointer"
                       >
                         Logout
                       </button>
@@ -217,6 +249,24 @@ export default function PublicNavbar() {
                   Write
                 </Link>
 
+                <Link href="/dashboard/myblogs" 
+                 onClick={() => setOpen(false)} 
+                 className={isActive("/dashboard/myblogs")}>
+                  My Blogs
+                </Link>
+
+                <Link href="/dashboard/drafts" 
+                 onClick={() => setOpen(false)} 
+                 className={isActive("/dashboard/drafts")}>
+                  Drafts
+                </Link>
+
+                <Link href="/dashboard/settings" 
+                 onClick={() => setOpen(false)} 
+                 className={isActive("/dashboard/settings")}>
+                  Settings
+                </Link>
+
                 <div 
                 onClick={() =>
                     user?.role === "admin"
@@ -224,9 +274,21 @@ export default function PublicNavbar() {
                       : router.push("/")
                   }
                 className={`flex items-center gap-1 cursor-pointer hover:opacity-80 transition ${isActive(user?.role === "admin" ? "/admin" : "/dashboard")}`}>
-                  <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-sm font-semibold">
-                    {user?.name ? user.name[0].toUpperCase() : "U"}
-                  </div>
+                  {user?.avatar ? (
+                    <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-200">
+                      <Image
+                        src={user.avatar}
+                        alt={user?.name || "Avatar"}
+                        width={32}
+                        height={32}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-sm font-semibold">
+                      {user?.name ? user.name[0].toUpperCase() : "U"}
+                    </div>
+                  )}
                   <span className="font-medium text-gray-800">{user?.name}</span>
                 </div>
 

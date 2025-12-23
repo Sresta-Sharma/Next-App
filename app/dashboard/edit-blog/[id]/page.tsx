@@ -1,19 +1,22 @@
-// Write Page
+// Edit Blog Page
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import BlogEditor from "@/app/components/editor/blogEditor";
 import toast from "react-hot-toast";
 import type { SerializedEditorState, SerializedElementNode } from "lexical";
 
-export default function WritePage() {
+export default function EditBlogPage() {
   const router = useRouter();
-  
+  const params = useParams();
+  const blogId = params.id as string;
+
   const [title, setTitle] = useState("");
   const [body, setBody] = useState<SerializedEditorState | null>(null);
   const [publishing, setPublishing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -22,40 +25,74 @@ export default function WritePage() {
     }
   }, [router]);
 
-  
+  // Fetch the blog content
   useEffect(() => {
-    const draft = localStorage.getItem("blog_draft");
-    if (draft) {
+    const fetchBlog = async () => {
       try {
-        const parsed = JSON.parse(draft);
-        setTitle(parsed.title || "");
-        setBody(parsed.body || null);
-      } catch {
-        localStorage.removeItem("blog_draft");
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/blog/${blogId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            },
+          }
+        );
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          toast.error(data.error || "Failed to load blog");
+          router.back();
+          return;
+        }
+
+        setTitle(data.blog.title);
+
+        // Parse the content if it's a JSON string
+        if (typeof data.blog.content === "string") {
+          try {
+            setBody(JSON.parse(data.blog.content));
+          } catch {
+            // If it's not valid JSON, treat it as plain text
+            setBody(null);
+          }
+        } else {
+          setBody(data.blog.content);
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to load blog");
+        router.back();
+      } finally {
+        setLoading(false);
       }
+    };
+
+    if (blogId) {
+      fetchBlog();
     }
-  }, []);
-  
+  }, [blogId]);
+
   function isEditorEmpty(state: SerializedEditorState | null) {
-  if (!state) return true;
+    if (!state) return true;
 
-  const root = state.root as SerializedElementNode;
-  // No blocks
-  if (!root.children || root.children.length === 0) return true;
+    const root = state.root as SerializedElementNode;
+    // No blocks
+    if (!root.children || root.children.length === 0) return true;
 
-  // Only empty paragraph
-  if (
-    root.children.length === 1 &&
-    root.children[0].type === "paragraph"
-  ) {
-    const paragraph = root.children[0] as SerializedElementNode;
-    return paragraph.children.length === 0;
+    // Only empty paragraph
+    if (
+      root.children.length === 1 &&
+      root.children[0].type === "paragraph"
+    ) {
+      const paragraph = root.children[0] as SerializedElementNode;
+      return paragraph.children.length === 0;
+    }
+
+    return false;
   }
 
-  return false;
-}
-  
-  const handlePublish = async () => {
+  const handleUpdate = async () => {
     if (!title.trim()) {
       toast.error("Title is required!");
       return;
@@ -69,40 +106,37 @@ export default function WritePage() {
     setPublishing(true);
 
     try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/blog`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-        body: JSON.stringify({
-          title: title.trim(),
-          content: JSON.stringify(body),
-        }),
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/blog/${blogId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+          body: JSON.stringify({
+            title: title.trim(),
+            content: JSON.stringify(body),
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.error || "Failed to update blog");
+        return;
       }
-    );
 
-    const data = await res.json();
-
-    if (!res.ok) {
-      toast.error(data.error || "Failed to publish blog");
-      return;
+      // Success
+      toast.success("Blog updated successfully!");
+      router.push(`/blogs/${blogId}`);
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong!");
+    } finally {
+      setPublishing(false);
     }
-
-    // Success
-    localStorage.removeItem("blog_draft");
-    toast.success("Blog published successfully!");
-
-    router.push(`/blogs/${data.newBlog.blog_id}`);
-
-  } catch (error) {
-    console.error(error);
-    toast.error("Something went wrong!");
-  } finally{
-    setPublishing(false);
-  }
   };
 
   const handleSaveDraft = async () => {
@@ -140,6 +174,7 @@ export default function WritePage() {
       localStorage.setItem("blog_draft", JSON.stringify({
         title,
         body,
+        blogId,
         savedAt: new Date().toISOString(),
       }));
 
@@ -152,6 +187,13 @@ export default function WritePage() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-10 max-sm:py-6 flex items-center justify-center">
+        <p className="text-gray-600">Loading blog...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 max-sm:py-6">
@@ -159,7 +201,7 @@ export default function WritePage() {
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-5xl font-bold text-black mb-8 max-sm:text-3xl max-sm:mb-6">
-            Create a Blog
+            Edit Blog
           </h1>
         </div>
 
@@ -183,9 +225,9 @@ export default function WritePage() {
             max-sm:py-2
           "
         />
-        
+
         {/* Editor */}
-        <BlogEditor onChange={setBody} />
+        <BlogEditor onChange={setBody} initialState={body} />
 
         {/* Actions */}
         <div className="mt-6 flex justify-end gap-3 max-sm:flex-col">
@@ -199,10 +241,10 @@ export default function WritePage() {
 
           <button
             className="px-5 py-2 rounded-full bg-[#111111] text-white text-sm hover:opacity-95 transition cursor-pointer max-sm:w-full disabled:opacity-50"
-            onClick={handlePublish}
+            onClick={handleUpdate}
             disabled={publishing}
           >
-            {publishing ? "Publishing..." : "Publish"}
+            {publishing ? "Updating..." : "Update"}
           </button>
         </div>
       </div>

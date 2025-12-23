@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import BlogViewer from "@/app/components/editor/blogViewer";
 import type { SerializedEditorState } from "lexical";
 
@@ -10,6 +11,7 @@ type Blog = {
   title: string;
   content: string;
   author_name: string;
+  author_id: number;
   created_at: string;
 };
 
@@ -18,6 +20,21 @@ export default function BlogReadPage() {
   const id = params?.id as string;
   const [blog, setBlog] = useState<Blog | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<number | null>(null);
+
+  // Get current user ID from localStorage
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        setUserId(user.user_id);
+      } catch (e) {
+        console.error("Failed to parse user:", e);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (!id) return;
@@ -55,10 +72,21 @@ export default function BlogReadPage() {
     <main className="min-h-screen bg-gray-50 py-10">
       <article className="max-w-3xl mx-auto px-4">
 
-        {/* Title */}
-        <h1 className="text-5xl font-bold text-black mb-6 max-sm:text-3xl">
-          {blog.title}
-        </h1>
+        {/* Title & Edit Link */}
+        <div className="flex justify-between items-start gap-4 mb-6">
+          <h1 className="text-5xl font-bold text-black max-sm:text-3xl">
+            {blog.title}
+          </h1>
+          
+          {userId === blog.author_id && (
+            <Link
+              href={`/dashboard/edit-blog/${blog.blog_id}`}
+              className="px-4 py-2 bg-black text-white rounded-full text-sm hover:opacity-90 whitespace-nowrap mt-1"
+            >
+              Edit
+            </Link>
+          )}
+        </div>
 
         {/* Meta */}
         <p className="text-sm text-gray-500 mb-10">

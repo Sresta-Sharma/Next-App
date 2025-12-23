@@ -58,57 +58,64 @@ export default function MyBlogsPage() {
     };
   
   return (
-    <div className="max-w-4xl mx-auto p-6 mt-10 bg-white border rounded-xl shadow-sm">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">My Blogs</h1>
+    <main className="min-h-screen bg-[#FAFAFA] text-[#111111]">
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-4xl font-extrabold">My Blogs</h1>
 
-        <Link
-          href="/write"
-          className="px-4 py-2 bg-black text-white rounded-full text-sm hover:opacity-90"
-        >
-          + Create Blog
-        </Link>
-      </div>
-
-      {loading ? (
-        <p className="text-gray-600">Loading...</p>
-      ) : blogs.length === 0 ? (
-        <p className="text-gray-600">You haven't written any blogs yet.</p>
-      ) : (
-        <div className="space-y-4">
-          {blogs.map((blog) => (
-            <div
-              key={blog.blog_id}
-              className="p-4 border rounded-lg hover:bg-gray-50 transition"
-            >
-              <div className="flex justify-between items-center">
-                <div>
-                  <h2 className="text-lg font-semibold">{blog.title}</h2>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {new Date(blog.created_at).toLocaleDateString()} • {blog.status}
-                  </p>
-                </div>
-
-                <div className="flex gap-3">
-                  <Link
-                    href={`/dashboard/edit-blog/${blog.blog_id}`}
-                    className="text-sm text-blue-600 hover:underline"
-                  >
-                    Edit
-                  </Link>
-
-                  <button
-                    onClick={() => toast("Delete coming soon")}
-                    className="text-sm text-red-500 hover:underline"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+          <Link
+            href="/write"
+            className="px-4 py-2 border border-[#1A1A1A] rounded-full hover:bg-gray-300 cursor-pointer transition"
+          >
+            + Create Blog
+          </Link>
         </div>
-      )}
-    </div>
+
+        {loading ? (
+          <p className="text-gray-600">Loading...</p>
+        ) : blogs.length === 0 ? (
+          <p className="text-gray-600">You haven't written any blogs yet.</p>
+        ) : (
+          <div className="space-y-4">
+            {blogs.map((blog) => (
+              <Link key={blog.blog_id} href={`/blogs/${blog.blog_id}`}>
+                <div
+                  className="p-4 border border-gray-200 rounded-lg hover:bg-white hover:shadow-sm transition cursor-pointer"
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h2 className="text-lg font-semibold">{blog.title}</h2>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {new Date(blog.created_at).toLocaleDateString()} • {blog.status}
+                      </p>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <Link
+                        href={`/dashboard/edit-blog/${blog.blog_id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-sm text-black hover:underline"
+                      >
+                        Edit
+                      </Link>
+
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleDelete(blog.blog_id);
+                        }}
+                        className="text-sm text-red-500 hover:underline cursor-pointer"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    </main>
   );
 }
