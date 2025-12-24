@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function DashboardLayout({
   children,
@@ -11,14 +11,7 @@ export default function DashboardLayout({
   const router = useRouter();
 
   const [showModal, setShowModal] = useState(false);
-
-  // Route protection
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) {
-      router.replace("/login");
-    }
-  }, [router]);
+  const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const logout = () => {
     localStorage.removeItem("accessToken");
@@ -27,6 +20,118 @@ export default function DashboardLayout({
     setShowModal(false);
     router.replace("/");
   };
+
+  const parseJwt = (token: string | null) => {
+    if (!token) return null;
+    try {
+      const base64Url = token.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map(function (c) {
+            return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+          })
+          .join("")
+      );
+      return JSON.parse(jsonPayload);
+    } catch {
+      return null;
+    }
+  };
+
+  const scheduleAccessRefresh = () => {
+    if (refreshTimerRef.current) {
+      clearTimeout(refreshTimerRef.current);
+      refreshTimerRef.current = null;
+    }
+    const accessToken = localStorage.getItem("accessToken");
+    const payload = parseJwt(accessToken);
+    if (!payload || !payload.exp) {
+      // No valid token; force logout
+      logout();
+      return;
+    }
+    const now = Date.now();
+    const expMs = payload.exp * 1000;
+    // Refresh 60s before expiry; if already past, refresh immediately
+    let delay = expMs - now - 60_000;
+    if (delay < 0) delay = 0;
+    refreshTimerRef.current = setTimeout(() => {
+      refreshAccessToken();
+    }, delay);
+  };
+
+  const refreshAccessToken = async () => {
+    const refreshToken = localStorage.getItem("refreshToken");
+    if (!refreshToken) {
+      logout();
+      return;
+    }
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/refresh-token`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refreshToken }),
+        }
+      );
+      if (!res.ok) {
+        // Invalid/expired refresh token → logout
+        logout();
+        return;
+      }
+      const data = await res.json();
+      if (data?.accessToken) {
+        localStorage.setItem("accessToken", data.accessToken);
+        // Reschedule next refresh using new token
+        scheduleAccessRefresh();
+      } else {
+        logout();
+      }
+    } catch {
+      // Network or other errors: safest is to logout
+      logout();
+    }
+  };
+
+  // Route protection
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      router.replace("/login");
+      return;
+    }
+    // On entry, proactively schedule access token refresh
+    scheduleAccessRefresh();
+    // Cleanup on unmount
+    return () => {
+      if (refreshTimerRef.current) {
+        clearTimeout(refreshTimerRef.current);
+        refreshTimerRef.current = null;
+      }
+    };
+  }, [router]);
+
+  // If page regains visibility after long inactivity, check and refresh immediately if needed
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") {
+        const token = localStorage.getItem("accessToken");
+        const payload = parseJwt(token);
+        const now = Date.now();
+        if (!payload || payload.exp * 1000 - now < 60_000) {
+          // Expiring within 60s or invalid → refresh now
+          refreshAccessToken();
+        } else {
+          scheduleAccessRefresh();
+        }
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, []);
 
   return (
     <>
