@@ -39,19 +39,22 @@ export default function SubscribeForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mt-4 flex items-center gap-2">
+    <form
+      onSubmit={handleSubmit}
+      className="mt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full"
+    >
       <input
         type="email"
         placeholder="Your email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="flex-1 px-3 py-2 rounded-full border border-gray-200 text-sm"
+        className="w-full px-3 py-2 rounded-full border border-gray-200 text-sm"
         aria-label="Email"
       />
       <button
         type="submit"
         disabled={loading}
-        className="px-4 py-2 rounded-full bg-[#111111] text-white text-sm disabled:opacity-50"
+        className="w-full sm:w-auto px-4 py-2 rounded-full bg-[#111111] text-white text-sm disabled:opacity-50 hover:cursor-pointer shrink-0"
       >
         {loading ? "Subscribing..." : "Subscribe"}
       </button>

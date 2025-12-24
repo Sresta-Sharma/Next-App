@@ -175,16 +175,6 @@ export default function PublicNavbar() {
                           <button
                             onClick={() => {
                               setShowUserMenu(false);
-                              router.push("/admin/settings");
-                            }}
-                            className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition cursor-pointer"
-                          >
-                            Settings
-                          </button>
-
-                          <button
-                            onClick={() => {
-                              setShowUserMenu(false);
                               router.push("/");
                             }}
                             className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition cursor-pointer"

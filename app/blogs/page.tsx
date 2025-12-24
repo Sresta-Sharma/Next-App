@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import BlogCard from "../components/blogCard";
+import SubscribeForm from "../components/subscribeBox";
 
 const API = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -129,19 +130,9 @@ export default function BlogsPage() {
               Get new stories delivered to your inbox.
             </p>
 
-            <form className="mt-4 flex items-center gap-2">
-              <input
-                type="email"
-                placeholder="Your email"
-                className="flex-1 px-3 py-2 rounded-full border border-gray-200 text-sm"
-              />
-              <button
-                type="submit"
-                className="px-4 py-2 rounded-full bg-[#111111] text-white text-sm"
-              >
-                Subscribe
-              </button>
-            </form>
+            <div className="mt-4">
+              <SubscribeForm />
+            </div>
           </section>
 
         </aside>

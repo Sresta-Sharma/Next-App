@@ -56,7 +56,7 @@ export default function SettingsPage() {
     };
 
     fetchSubscriptionStatus();
-  }, [token]);
+  }, [token, router]);
 
   const handleChangePassword = async () => {
     if (!oldPassword || !newPassword || !confirmPassword) {
@@ -202,118 +202,126 @@ export default function SettingsPage() {
 
   return (
     <main className="min-h-screen bg-[#FAFAFA]">
-      <div className="max-w-2xl mx-auto px-6 py-12">
+      <div className="max-w-6xl mx-auto px-6 py-12">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-[#111111]">Settings</h1>
           <p className="text-gray-500 mt-2">Manage your account and preferences</p>
         </div>
 
-        {/* Change Password Section */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8 mb-6">
-          <h2 className="text-2xl font-semibold text-[#111111] mb-6">Change Password</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* LEFT COLUMN - Change Password */}
+          <div className="space-y-6">
+            {/* Change Password Section */}
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8">
+              <h2 className="text-2xl font-semibold text-[#111111] mb-6">Change Password</h2>
 
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-semibold text-[#111111] mb-2">
-                Current Password
-              </label>
-              <input
-                type="password"
-                value={oldPassword}
-                onChange={(e) => setOldPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg text-sm border border-gray-300 bg-white focus:border-gray-400 focus:ring-1 focus:ring-gray-200 outline-none"
-              />
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-600 mb-2">
+                    Current Password
+                  </label>
+                  <input
+                    type="password"
+                    value={oldPassword}
+                    onChange={(e) => setOldPassword(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg text-sm border border-gray-300 bg-white focus:border-gray-400 focus:ring-1 focus:ring-gray-200 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-600 mb-2">
+                    New Password
+                  </label>
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg text-sm border border-gray-300 bg-white focus:border-gray-400 focus:ring-1 focus:ring-gray-200 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-600 mb-2">
+                    Confirm New Password
+                  </label>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg text-sm border border-gray-300 bg-white focus:border-gray-400 focus:ring-1 focus:ring-gray-200 outline-none"
+                  />
+                </div>
+
+                <button
+                  onClick={handleChangePassword}
+                  disabled={changingPassword}
+                  className="mt-6 px-6 py-3 bg-[#111111] text-white rounded-full text-sm font-semibold hover:opacity-90 transition disabled:opacity-50 cursor-pointer"
+                >
+                  {changingPassword ? "Changing..." : "Change Password"}
+                </button>
+              </div>
             </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-[#111111] mb-2">
-                New Password
-              </label>
-              <input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg text-sm border border-gray-300 bg-white focus:border-gray-400 focus:ring-1 focus:ring-gray-200 outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-[#111111] mb-2">
-                Confirm New Password
-              </label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg text-sm border border-gray-300 bg-white focus:border-gray-400 focus:ring-1 focus:ring-gray-200 outline-none"
-              />
-            </div>
-
-            <button
-              onClick={handleChangePassword}
-              disabled={changingPassword}
-              className="mt-6 px-6 py-3 bg-[#111111] text-white rounded-full text-sm font-semibold hover:opacity-90 transition disabled:opacity-50"
-            >
-              {changingPassword ? "Changing..." : "Change Password"}
-            </button>
           </div>
-        </div>
 
-        {/* Subscription Section */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8 mb-6">
-          <h2 className="text-2xl font-semibold text-[#111111] mb-6">Newsletter</h2>
+          {/* RIGHT COLUMN - Newsletter & Danger Zone */}
+          <div className="space-y-6">
+            {/* Subscription Section */}
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8">
+              <h2 className="text-2xl font-semibold text-[#111111] mb-6">Newsletter</h2>
 
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-[#111111] font-semibold">Email Newsletter Subscription</p>
-              <p className="text-gray-600 text-sm mt-1">
-                Receive updates when new blogs are posted
-              </p>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <p className="text-[#111111] font-semibold">Email Newsletter Subscription</p>
+                  <p className="text-gray-600 text-sm mt-1">
+                    Receive updates when new blogs are posted
+                  </p>
+                </div>
+
+                <button
+                  onClick={handleToggleSubscription}
+                  className={`px-6 py-3 rounded-full text-sm font-semibold transition shrink-0 ${
+                    isSubscribed
+                      ? "border bg-white text-red-500 hover:bg-red-200 cursor-pointer"
+                      : "bg-[#111111] text-white hover:opacity-90 cursor-pointer"
+                  }`}
+                >
+                  {isSubscribed ? "Unsubscribe" : "Subscribe"}
+                </button>
+              </div>
             </div>
 
-            <button
-              onClick={handleToggleSubscription}
-              className={`px-6 py-3 rounded-full text-sm font-semibold transition ${
-                isSubscribed
-                  ? "bg-red-500 text-white hover:bg-red-600"
-                  : "bg-[#111111] text-white hover:opacity-90"
-              }`}
-            >
-              {isSubscribed ? "Unsubscribe" : "Subscribe"}
-            </button>
-          </div>
-        </div>
+            {/* Delete Account Section */}
+            <div className="bg-white rounded-lg border border-red-200 shadow-sm p-8">
+              <h2 className="text-2xl font-semibold text-red-500 mb-6">Danger Zone</h2>
 
-        {/* Delete Account Section */}
-        <div className="bg-white rounded-lg border border-red-200 shadow-sm p-8">
-          <h2 className="text-2xl font-semibold text-red-600 mb-6">Danger Zone</h2>
+              <div className="space-y-4">
+                <p className="text-gray-700">
+                  Deleting your account is permanent and cannot be undone. All your blogs and data will be deleted.
+                </p>
 
-          <div className="space-y-4">
-            <p className="text-gray-700">
-              Deleting your account is permanent and cannot be undone. All your blogs and data will be deleted.
-            </p>
+                <div>
+                  <label className="block text-sm font-semibold text-[#111111] mb-2">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    value={deletePassword}
+                    onChange={(e) => setDeletePassword(e.target.value)}
+                    placeholder="Enter your password to confirm"
+                    className="w-full px-4 py-3 rounded-lg text-sm border border-gray-300 bg-white focus:border-gray-400 focus:ring-1 focus:ring-gray-200 outline-none"
+                  />
+                </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-[#111111] mb-2">
-                Password
-              </label>
-              <input
-                type="password"
-                value={deletePassword}
-                onChange={(e) => setDeletePassword(e.target.value)}
-                placeholder="Enter your password to confirm"
-                className="w-full px-4 py-3 rounded-lg text-sm border border-gray-300 bg-white focus:border-gray-400 focus:ring-1 focus:ring-gray-200 outline-none"
-              />
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={deletingAccount}
+                  className="mt-6 px-6 py-3 border bg-white text-red-500 rounded-full text-sm font-semibold hover:bg-red-200 transition cursor-pointer"
+                >
+                  {deletingAccount ? "Deleting..." : "Delete Account"}
+                </button>
+              </div>
             </div>
-
-            <button
-              onClick={handleDeleteAccount}
-              disabled={deletingAccount}
-              className="mt-6 px-6 py-3 bg-red-600 text-white rounded-full text-sm font-semibold hover:bg-red-700 transition disabled:opacity-50"
-            >
-              {deletingAccount ? "Deleting..." : "Delete Account"}
-            </button>
           </div>
         </div>
       </div>

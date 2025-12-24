@@ -15,6 +15,7 @@ export default function ManageUsers() {
     
     const [users, setUsers] = useState<User[]>([]);
     const router = useRouter();
+    const API = process.env.NEXT_PUBLIC_API_BASE_URL;
 
     useEffect(() => {
         // Wait until AdminLayout sets "user"
@@ -29,7 +30,7 @@ export default function ManageUsers() {
             return;
         }
 
-        fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/admin/users`, {
+        fetch(`${API}/api/auth/admin/users`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -53,10 +54,17 @@ export default function ManageUsers() {
         if (!confirm("Are you sure you want to delete this user?")) return;
 
         try {
-            const res = await fetch(`http://localhost:5000/api/auth/admin/users/${id}`, {
+            const token = localStorage.getItem("accessToken");
+            if (!token) {
+                toast.error("Session expired. Please log in again.");
+                router.replace("/login");
+                return;
+            }
+
+            const res = await fetch(`${API}/api/auth/admin/users/${id}`, {
                 method: "DELETE",
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    Authorization: `Bearer ${token}`,
                 },
             });
 
@@ -93,12 +101,19 @@ export default function ManageUsers() {
             return;
         }
 
-        try{
-            const res = await fetch(`http://localhost:5000/api/auth/admin/users/${id}/role`, {
+        try {
+            const token = localStorage.getItem("accessToken");
+            if (!token) {
+                toast.error("Session expired. Please log in again.");
+                router.replace("/login");
+                return;
+            }
+
+            const res = await fetch(`${API}/api/auth/admin/users/${id}/role`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({ role: newRole }),
             });
