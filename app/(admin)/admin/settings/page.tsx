@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
@@ -13,6 +13,7 @@ export default function SettingsPage() {
         email: string;
         role: string;
         phone?: string;
+        avatar?: string;
     };
 
     const [ user, setUser ] = useState<User | null>(null);
@@ -87,98 +88,116 @@ export default function SettingsPage() {
   if (!user) return <p>Loading...</p>;
     
   return (
-  <div className="flex justify-center mt-0">
-    <div className="w-full max-w-xl bg-white p-6 rounded-xl shadow-sm border">
-      <h1 className="text-xl font-semibold mb-4">Settings</h1>
+        <div className="min-h-screen bg-[#FAFAFA]">
+            {/* Main Content */}
+            <div className="max-w-3xl mx-auto px-6 py-12">
+                <div className="mb-8">
+                    <h1 className="text-4xl font-bold text-[#111111]">Admin Settings</h1>
+                    <p className="text-gray-500 mt-2">Manage your admin profile and account settings.</p>
+                </div>
 
-      <h2 className="text-xl font-semibold mb-6 text-gray-800">Admin Profile</h2>
+                {/* Settings Card */}
+                <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                    
+                    {/* Profile Section */}
+                    <div className="p-8">
+                        <h2 className="text-xl font-semibold mb-6 text-gray-900">Profile Information</h2>
 
-      {/* STATIC FIELDS */}
-      <div className="space-y-3 mb-6">
-        <div>
-          <label className="text-gray-600 text-sm font-medium mb-1 block">User ID</label>
-          <input
-            disabled
-            value={user.user_id}
-            className="w-full px-3 py-2 border rounded-md bg-gray-100 text-sm cursor-not-allowed"
-          />
+                        {/* STATIC FIELDS */}
+                        <div className="space-y-4 mb-6">
+                            <div>
+                            <label className="block text-sm font-semibold text-[#111111] mb-2">User ID</label>
+                            <input
+                                disabled
+                                value={user.user_id}
+                                className="w-full px-4 py-3 rounded-lg text-sm border border-gray-200 bg-gray-50 cursor-not-allowed text-gray-700"
+                            />
+                            </div>
+
+                            <div>
+                            <label className="block text-sm font-semibold text-[#111111] mb-2">Role</label>
+                            <input
+                                disabled
+                                value={user.role}
+                                className="w-full px-4 py-3 rounded-lg text-sm border border-gray-200 bg-gray-50 cursor-not-allowed text-gray-700"
+                            />
+                            </div>
+                        </div>
+
+                        {/* EDITABLE FIELDS */}
+                        <div className="space-y-4 mb-8">
+                            <div>
+                            <label className="block text-sm font-semibold text-[#111111] mb-2">Full Name</label>
+                            <input
+                                disabled={!isEditing}
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                className={`w-full px-4 py-3 rounded-lg text-sm border transition ${
+                                isEditing
+                                    ? "border-gray-300 bg-white focus:border-gray-400 focus:ring-1 focus:ring-gray-200 outline-none"
+                                    : "border-gray-200 bg-gray-50 cursor-not-allowed text-gray-700"
+                                }`}
+                            />
+                            </div>
+
+                            <div>
+                            <label className="block text-sm font-semibold text-[#111111] mb-2">Email Address</label>
+                            <input
+                                disabled={!isEditing}
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                type="email"
+                                className={`w-full px-4 py-3 rounded-lg text-sm border transition ${
+                                isEditing
+                                    ? "border-gray-300 bg-white focus:border-gray-400 focus:ring-1 focus:ring-gray-200 outline-none"
+                                    : "border-gray-200 bg-gray-50 cursor-not-allowed text-gray-700"
+                                }`}
+                            />
+                            </div>
+
+                            <div>
+                            <label className="block text-sm font-semibold text-[#111111] mb-2">Phone Number</label>
+                            <input
+                                disabled={!isEditing}
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                                className={`w-full px-4 py-3 rounded-lg text-sm border transition ${
+                                isEditing
+                                    ? "border-gray-300 bg-white focus:border-gray-400 focus:ring-1 focus:ring-gray-200 outline-none"
+                                    : "border-gray-200 bg-gray-50 cursor-not-allowed text-gray-700"
+                                }`}
+                            />
+                            </div>
+                        </div>
+
+                        {/* BUTTONS */}
+                        {!isEditing ? (
+                            <button
+                            className="px-6 py-3 bg-[#111111] text-white rounded-full text-sm font-semibold hover:opacity-90 transition cursor-pointer"
+                            onClick={() => setIsEditing(true)}
+                            >
+                            Edit Profile
+                            </button>
+                        ) : (
+                            <div className="flex gap-3">
+                            <button
+                                className="px-6 py-3 bg-[#111111] text-white rounded-full text-sm font-semibold hover:opacity-90 transition cursor-pointer"
+                                onClick={handleSaveChanges}
+                            >
+                                Save Changes
+                            </button>
+
+                            <button
+                                className="px-6 py-3 border border-gray-300 text-[#111111] rounded-full text-sm font-semibold hover:bg-gray-50 transition cursor-pointer"
+                                onClick={handleCancel}
+                            >
+                                Cancel
+                            </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <div>
-          <label className="text-gray-600 text-sm font-medium mb-1 block">Role</label>
-          <input
-            disabled
-            value={user.role}
-            className="w-full px-3 py-2 border rounded-md bg-gray-100 text-sm cursor-not-allowed"
-          />
-        </div>
-      </div>
-
-      {/* EDITABLE FIELDS */}
-      <div className="space-y-3 mb-6">
-        <div>
-          <label className="text-gray-600 text-sm font-medium mb-1 block">Name</label>
-          <input
-            disabled={!isEditing}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md text-sm ${
-              isEditing ? "" : "bg-gray-100 cursor-not-allowed"
-            }`}
-          />
-        </div>
-
-        <div>
-          <label className="text-gray-600 text-sm font-medium mb-1 block">Email</label>
-          <input
-            disabled={!isEditing}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md text-sm ${
-              isEditing ? "" : "bg-gray-100 cursor-not-allowed"
-            }`}
-          />
-        </div>
-
-        <div>
-          <label className="text-gray-600 text-sm font-medium mb-1 block">Phone</label>
-          <input
-            disabled={!isEditing}
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className={`w-full px-3 py-2 border rounded-md text-sm ${
-              isEditing ? "" : "bg-gray-100 cursor-not-allowed"
-            }`}
-          />
-        </div>
-      </div>
-
-      {/* BUTTONS */}
-      {!isEditing ? (
-        <button
-          className="px-4 py-2 bg-[#111111] text-white text-sm rounded-full hover:opacity-90 transition"
-          onClick={() => setIsEditing(true)}
-        >
-          Update Profile
-        </button>
-      ) : (
-        <div className="flex gap-3">
-          <button
-            className="px-4 py-2 bg-[#111111] text-white text-sm rounded-full hover:opacity-90 transition"
-            onClick={handleSaveChanges}
-          >
-            Save Changes
-          </button>
-
-          <button
-            className="px-4 py-2 border border-[#1A1A1A] text-sm rounded-full hover:bg-gray-50 transition"
-            onClick={handleCancel}
-          >
-            Cancel
-          </button>
-        </div>
-      )}
-    </div>
-  </div>
 );
 }

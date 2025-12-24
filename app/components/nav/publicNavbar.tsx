@@ -149,56 +149,103 @@ export default function PublicNavbar() {
 
                   {showUserMenu && (
                     <div className="absolute right-0 mt-3 w-52 bg-white rounded-2xl shadow-md border border-gray-100 z-50 overflow-hidden">
-                      <button
-                        onClick={() => {
-                          setShowUserMenu(false);
-                          router.push("/dashboard/profile");
-                        }}
-                        className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition cursor-pointer"
-                      >
-                        Profile
-                      </button>
+                      {/* Show Admin Menu if on admin pages */}
+                      {pathname.startsWith("/admin") && user?.role === "admin" ? (
+                        <>
+                          <button
+                            onClick={() => {
+                              setShowUserMenu(false);
+                              router.push("/admin");
+                            }}
+                            className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition cursor-pointer"
+                          >
+                            Dashboard
+                          </button>
 
-                      <button
-                        onClick={() => {
-                          setShowUserMenu(false);
-                          router.push("/dashboard/myblogs");
-                        }}
-                        className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition cursor-pointer"
-                      >
-                        My Blogs
-                      </button>
+                          <button
+                            onClick={() => {
+                              setShowUserMenu(false);
+                              router.push("/admin/users");
+                            }}
+                            className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition cursor-pointer"
+                          >
+                            Manage Users
+                          </button>
 
-                      <button
-                        onClick={() => {
-                          setShowUserMenu(false);
-                          router.push("/dashboard/drafts");
-                        }}
-                        className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition cursor-pointer"
-                      >
-                        Drafts
-                      </button>
+                          <button
+                            onClick={() => {
+                              setShowUserMenu(false);
+                              router.push("/admin/settings");
+                            }}
+                            className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition cursor-pointer"
+                          >
+                            Settings
+                          </button>
 
-                      <button
-                        onClick={() => {
-                          setShowUserMenu(false);
-                          router.push("/dashboard/settings");
-                        }}
-                        className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition cursor-pointer"
-                      >
-                        Settings
-                      </button>
+                          <button
+                            onClick={() => {
+                              setShowUserMenu(false);
+                              router.push("/");
+                            }}
+                            className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition cursor-pointer"
+                          >
+                            Back to Site
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => {
+                              setShowUserMenu(false);
+                              router.push("/dashboard/profile");
+                            }}
+                            className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition cursor-pointer"
+                          >
+                            Profile
+                          </button>
 
-                      {user?.role === "admin" && (
-                        <button
-                          onClick={() => {
-                            setShowUserMenu(false);
-                            router.push("/admin");
-                          }}
-                          className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition"
-                        >
-                          Admin Panel
-                        </button>
+                          <button
+                            onClick={() => {
+                              setShowUserMenu(false);
+                              router.push("/dashboard/myblogs");
+                            }}
+                            className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition cursor-pointer"
+                          >
+                            My Blogs
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              setShowUserMenu(false);
+                              router.push("/dashboard/drafts");
+                            }}
+                            className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition cursor-pointer"
+                          >
+                            Drafts
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              setShowUserMenu(false);
+                              router.push("/dashboard/settings");
+                            }}
+                            className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition cursor-pointer"
+                          >
+                            Settings
+                          </button>
+
+                          {user?.role === "admin" && (
+                            <button
+                              onClick={() => {
+                                setShowUserMenu(false);
+                                router.push("/admin");
+                              }}
+                              className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition cursor-pointer"
+                            >
+                              Admin Panel
+                            </button>
+                          )}
+                        </>
                       )}
 
                       <div className="h-px bg-gray-100 mx-3" />

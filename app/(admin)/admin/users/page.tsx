@@ -123,53 +123,65 @@ export default function ManageUsers() {
     };
 
     return (
-        <div className="flex justify-center mt-0">
-        <div className="w-full max-w-5xl bg-white p-6 rounded-xl shadow-sm border">
-        <h1 className="text-xl font-semibold mb-6">Manage Users</h1>
+        <div className="min-h-screen bg-[#FAFAFA]">
+                {/* Main Content */}
+                <div className="max-w-6xl mx-auto px-6 py-12">
+                    <div className="mb-8">
+                        <h1 className="text-4xl font-bold text-[#111111]">Manage Users</h1>
+                        <p className="text-gray-500 mt-2">View and manage all registered users.</p>
+                    </div>
 
+                    <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead>
+                                    <tr className="bg-gray-50 text-gray-700 text-sm border-b">
+                                        <th className="p-4 text-left font-semibold">ID</th>
+                                        <th className="p-4 text-left font-semibold">Name</th>
+                                        <th className="p-4 text-left font-semibold">Email</th>
+                                        <th className="p-4 text-left font-semibold">Role</th>
+                                        <th className="p-4 text-left font-semibold">Actions</th>
+                                    </tr>
+                                </thead>
 
-        <table className="w-full border rounded-lg overflow-hidden">
-        <thead>
-        <tr className="bg-gray-100 text-gray-700 text-sm">
-        <th className="p-3 border">ID</th>
-        <th className="p-3 border">Name</th>
-        <th className="p-3 border">Email</th>
-        <th className="p-3 border">Role</th>
-        <th className="p-3 border">Actions</th>
-        </tr>
-        </thead>
+                                <tbody>
+                                    {users.map((user, idx) => (
+                                        <tr key={user.user_id} className={`text-sm ${idx !== users.length - 1 ? 'border-b' : ''}`}>
+                                            <td className="p-4 text-gray-600">{user.user_id}</td>
+                                            <td className="p-4 text-gray-900">{user.name}</td>
+                                            <td className="p-4 text-gray-600">{user.email}</td>
+                                            <td className="p-4">
+                                                <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                                                    user.role === 'admin' 
+                                                        ? 'bg-purple-100 text-purple-700' 
+                                                        : 'bg-gray-100 text-gray-700'
+                                                }`}>
+                                                    {user.role}
+                                                </span>
+                                            </td>
 
+                                            <td className="p-4 flex gap-2">
+                                                <button
+                                                    className="px-4 py-2 bg-[#111111] text-white rounded-full hover:opacity-90 transition text-xs font-semibold cursor-pointer"
+                                                    onClick={() => handleUpdateRole(user.user_id)}
+                                                >
+                                                    Change Role
+                                                </button>
 
-        <tbody>
-        {users.map((user) => (
-        <tr key={user.user_id} className="text-sm">
-        <td className="p-3 border">{user.user_id}</td>
-        <td className="p-3 border">{user.name}</td>
-        <td className="p-3 border">{user.email}</td>
-        <td className="p-3 border">{user.role}</td>
-
-
-        <td className="p-3 border flex gap-3">
-        <button
-        className="px-3 py-1 bg-[#111111] text-white rounded-full hover:opacity-95 transition"
-        onClick={() => handleDelete(user.user_id)}
-        >
-        Delete
-        </button>
-
-
-        <button
-        className="px-3 py-1 border border-[#1A1A1A] rounded-full hover:bg-gray-50 transition"
-        onClick={() => handleUpdateRole(user.user_id)}
-        >
-        Change Role
-        </button>
-        </td>
-        </tr>
-        ))}
-        </tbody>
-        </table>
-        </div>
-        </div>
-        );
+                                                <button
+                                                    className="px-4 py-2 border border-red-300 text-red-600 rounded-full hover:bg-red-50 transition text-xs font-semibold cursor-pointer"
+                                                    onClick={() => handleDelete(user.user_id)}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    );
 }
