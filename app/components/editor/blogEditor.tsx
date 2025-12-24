@@ -151,16 +151,14 @@ export default function BlogEditor({
       `}
 
       </style>
-      <div className="bg-white rounded-xl border border-gray-300 shadow-sm p-4 max-sm:p-3">
+      <div className="bg-white rounded-xl border border-gray-300 shadow-sm flex flex-col max-h-screen overflow-hidden">
         {/* Toolbar */}
-        <div className="sticky top-0 z-20 bg-white border-b border-gray-200 overflow-x-auto">
-          <div className="flex gap-2 flex-wrap py-2 max-sm:gap-1">
-        <Toolbar uploadUrl={uploadUrl} />
-        </div>
+        <div className="sticky top-0 z-20 bg-white border-b border-gray-200 overflow-x-auto flex-shrink-0">
+          <Toolbar uploadUrl={uploadUrl} />
         </div>
 
         {/* Editor */}
-        <div className="mt-3 border rounded-md p-4 bg-white border-gray-200 max-sm:p-3">
+        <div className="border-t border-gray-200 p-4 bg-white max-sm:p-3 overflow-y-auto flex-1">
           <RichTextPlugin
             contentEditable={
               <ContentEditable className="editor-input min-h-[300px] px-1 outline-none max-sm:min-h-[220px] max-sm:text-sm" />

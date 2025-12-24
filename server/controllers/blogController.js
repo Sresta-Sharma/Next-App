@@ -60,10 +60,28 @@ async function notifySubscribers(blog, authorName) {
 
         const emails = subscribers.rows.map(row => row.email);
         
-        // Create a short preview of the content (first 200 characters)
-        const contentPreview = blog.content
-            .replace(/<[^>]*>/g, '') // Remove HTML tags
-            .substring(0, 200) + '...';
+        // Extract text content from Lexical JSON editor format
+        let contentPreview = "";
+        try {
+            const contentJSON = JSON.parse(blog.content);
+            const extractText = (node) => {
+                if (node.type === 'text') {
+                    return node.text;
+                }
+                if (node.children && Array.isArray(node.children)) {
+                    return node.children.map(extractText).join('');
+                }
+                return '';
+            };
+            
+            contentPreview = extractText(contentJSON.root);
+        } catch (e) {
+            // Fallback if content is not valid JSON
+            contentPreview = blog.content.replace(/<[^>]*>/g, '');
+        }
+        
+        // Limit preview to 200 characters
+        contentPreview = contentPreview.substring(0, 200).trim() + '...';
 
         const html = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -72,7 +90,7 @@ async function notifySubscribers(blog, authorName) {
                 <p style="color: #666;">By ${authorName}</p>
                 <p style="color: #777; line-height: 1.6;">${contentPreview}</p>
                 <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/blogs/${blog.blog_id}" 
-                   style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; margin-top: 15px;">
+                   style="display: inline-block; padding: 10px 20px; background-color: white; color: black; text-decoration: none; border-radius: 5px; margin-top: 15px;">
                     Read Full Article
                 </a>
                 <hr style="margin-top: 30px; border: none; border-top: 1px solid #ddd;">

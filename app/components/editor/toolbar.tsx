@@ -43,9 +43,8 @@ function Button({
       type="button"
       onClick={onClick}
       title={title}
-      className={`px-3 py-1 border rounded-full text-sm
-                  max-sm:px-2 max-sm:text-xs
-                  cursor-pointer
+      className={`px-2 sm:px-3 py-1 border rounded-full text-xs sm:text-sm
+                  cursor-pointer whitespace-nowrap
                 hover:bg-[#F3F3F3] transition-colors duration-150
                   ${active ? "bg-gray-900 text-white border-gray-900"
                      : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"}
@@ -228,17 +227,17 @@ function updateFontSizeInStyle(style: string, fontSize: number): string {
   );
 
   return (
-    <div className="flex flex-col gap-2 overflow-x-auto">
-      {/* Row 1 */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <div className="flex gap-2">
+    <div className="sticky top-0 z-20 w-full flex flex-col gap-2 sm:gap-3 bg-white p-3 sm:p-4 border-b border-gray-200">
+      {/* Row 1: Heading, Lists, Code - Left aligned, Upload Image right aligned */}
+      <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-between">
+        <div className="flex gap-1 sm:gap-2 flex-wrap">
           <Button title="Normal Paragraph" onClick={() => setHeading(null)}>Normal</Button>
           <Button title="Heading 1" onClick={() => setHeading(1)}>H1</Button>
           <Button title="Heading 2" onClick={() => setHeading(2)}>H2</Button>
           <Button title="Heading 3" onClick={() => setHeading(3)}>H3</Button>
         </div>
 
-        <div className="ml-4 flex gap-2">
+        <div className="flex gap-1 sm:gap-2 flex-wrap flex-shrink-0">
           <Button title="Bullet List"
             onClick={() =>
               editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined)
@@ -256,31 +255,35 @@ function updateFontSizeInStyle(style: string, fontSize: number): string {
           <Button title="Insert CodeBlock" onClick={insertCodeBlock}>{`<>`}</Button>
         </div>
 
-        <div className="ml-auto flex gap-2 max-sm:ml-0">
-          <label className="px-3 py-1 border rounded-full text-sm cursor-pointer
-                            bg-white text-gray-800 border-gray-300 hover:bg-gray-100
-                            transition-colors duration-150">
-            Upload Image
-            <input
-              type="file"
-              accept="image/*"
-              onChange={onFileChange}
-              className="hidden"
-            />
-          </label>
-        </div>
+        {/* Upload Image - Right aligned */}
+        <label title="Upload Image" className="px-2 sm:px-3 py-1 border rounded-full text-xs sm:text-sm cursor-pointer
+                          bg-white text-gray-800 border-gray-300 hover:bg-gray-100
+                          transition-colors duration-150 flex items-center gap-1 whitespace-nowrap flex-shrink-0">
+          <img src="/image-icon.png" alt="Upload" className="w-4 h-4 sm:w-5 sm:h-5" />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={onFileChange}
+            className="hidden"
+          />
+        </label>
       </div>
 
-      {/* Row 2 */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <Button title="Bold" onClick={() => execFormat("bold")} active={isBold}>B</Button>
-        <Button title="Italic" onClick={() => execFormat("italic")} active={isItalic}>I</Button>
-        <Button title="Underline" onClick={() => execFormat("underline")} active={isUnderline}>U</Button>
-        <Button title="Subscript" onClick={applySubscript}>X₂</Button>
-        <Button title="Superscript" onClick={applySuperscript}>X³</Button>
+      {/* Row 2: Text formatting - Left section (B,I,U), Center-left section (subscript/superscript), Center-right (Font size), Right (Alignment) */}
+      <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-between">
+        <div className="flex gap-1 sm:gap-2 flex-wrap">
+          <Button title="Bold" onClick={() => execFormat("bold")} active={isBold}>B</Button>
+          <Button title="Italic" onClick={() => execFormat("italic")} active={isItalic}>I</Button>
+          <Button title="Underline" onClick={() => execFormat("underline")} active={isUnderline}>U</Button>
+        </div>
 
-        <div className="ml-4 flex items-center gap-2">
-          <Button onClick={() => changeFontSize(-2)}>-</Button>
+        <div className="flex gap-1 sm:gap-2 flex-wrap flex-shrink-0">
+          <Button title="Subscript" onClick={applySubscript}>X₂</Button>
+          <Button title="Superscript" onClick={applySuperscript}>X³</Button>
+        </div>
+
+        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+          <Button onClick={() => changeFontSize(-2)}>−</Button>
           {/* Editable font size input */}
           <input
             type="number"
@@ -306,16 +309,17 @@ function updateFontSizeInStyle(style: string, fontSize: number): string {
                 });
               });
             }}
-            className="w-12 text-center text-sm border border-gray-300 rounded px-1 py-0.5"
+            className="w-10 sm:w-12 text-center text-xs sm:text-sm border border-gray-300 rounded px-1 py-0.5"
           />
           <Button onClick={() => changeFontSize(2)}>+</Button>
         </div>
 
-        <div className="ml-auto flex gap-2">
-          <Button title="Align Left" onClick={() => align("left")}>Left</Button>
-          <Button title="Align Center" onClick={() => align("center")}>Center</Button>
-          <Button title="Align Right" onClick={() => align("right")}>Right</Button>
-          <Button title="Justify Text" onClick={() => align("justify")}>Justify</Button>
+        {/* Alignment buttons - Right aligned */}
+        <div className="flex gap-1 sm:gap-2 flex-wrap">
+          <Button title="Align Left" onClick={() => align("left")}>⬅</Button>
+          <Button title="Align Center" onClick={() => align("center")}>↔</Button>
+          <Button title="Align Right" onClick={() => align("right")}>➡</Button>
+          <Button title="Justify Text" onClick={() => align("justify")}>≡</Button>
         </div>
       </div>
     </div>
