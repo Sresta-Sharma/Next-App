@@ -53,6 +53,13 @@ app.use("/api/subscribe", subscribeRoutes);
 const draftRoutes = require("./routes/draftRoutes");
 app.use("/api/drafts", draftRoutes);
 
+// Serve uploaded images statically
+app.use("/uploads", express.static("public/uploads"));
+
+// Import upload routes
+const uploadRoutes = require("./routes/uploadRoutes");
+app.use("/api/upload-image", uploadRoutes);
+
 //Root /
 app.get("/", (req, res) => {
     res.send("Backend server is running!");

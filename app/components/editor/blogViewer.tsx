@@ -6,6 +6,7 @@ import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import type { EditorThemeClasses } from "lexical";
+import ImageNode from "./nodes/imageNode";
 
 const theme: EditorThemeClasses = {};
 
@@ -22,6 +23,7 @@ export default function BlogViewer({ content }: { content: any }) {
         editorState: initializeEditorState,
         editable: false,
         theme,
+        nodes: [ImageNode],
         onError(error) {
           console.error("Lexical Error:", error);
         },
