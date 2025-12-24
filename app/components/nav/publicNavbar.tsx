@@ -190,15 +190,27 @@ export default function PublicNavbar() {
                       </button>
 
                       {user?.role === "admin" && (
-                        <button
-                          onClick={() => {
-                            setShowUserMenu(false);
-                            router.push("/admin/users");
-                          }}
-                          className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition cursor-pointer"
-                        >
-                          Manage Users
-                        </button>
+                        <>
+                          <button
+                            onClick={() => {
+                              setShowUserMenu(false);
+                              router.push("/admin/users");
+                            }}
+                            className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition cursor-pointer"
+                          >
+                            Manage Users
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              setShowUserMenu(false);
+                              router.push("/admin/subscriptions");
+                            }}
+                            className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition cursor-pointer"
+                          >
+                            Manage Subscriptions
+                          </button>
+                        </>
                       )}
 
                       <div className="h-px bg-gray-100 mx-3" />

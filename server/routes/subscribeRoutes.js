@@ -171,4 +171,56 @@ router.post("/subscribe", protect, async (req, res) => {
     }
 });
 
+// Get all subscribers (admin only)
+router.get("/all", protect, async (req, res) => {
+    try {
+        console.log("Fetching subscribers for user:", req.user.user_id);
+        
+        // Check if user is admin
+        const userRes = await pool.query("SELECT role FROM users WHERE user_id = $1", [req.user.user_id]);
+        
+        if (userRes.rows.length === 0 || userRes.rows[0].role !== "admin") {
+            return res.status(403).json({ error: "Unauthorized. Admin access required." });
+        }
+
+        const subscribersRes = await pool.query(
+            "SELECT subscriber_id, email, is_active, subscribed_at FROM subscribers ORDER BY subscriber_id ASC"
+        );
+
+        console.log("Subscribers fetched:", subscribersRes.rows.length);
+        return res.json({ success: true, subscribers: subscribersRes.rows });
+    } catch (error) {
+        console.error("Get All Subscribers Error:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Delete a subscriber (admin only)
+router.delete("/:id", protect, async (req, res) => {
+    try {
+        // Check if user is admin
+        const userRes = await pool.query("SELECT role FROM users WHERE user_id = $1", [req.user.user_id]);
+        
+        if (userRes.rows.length === 0 || userRes.rows[0].role !== "admin") {
+            return res.status(403).json({ error: "Unauthorized. Admin access required." });
+        }
+
+        const { id } = req.params;
+
+        const deleteRes = await pool.query(
+            "DELETE FROM subscribers WHERE subscriber_id = $1 RETURNING *",
+            [id]
+        );
+
+        if (deleteRes.rows.length === 0) {
+            return res.status(404).json({ error: "Subscriber not found" });
+        }
+
+        return res.json({ success: true, message: "Subscriber removed successfully" });
+    } catch (error) {
+        console.error("Delete Subscriber Error:", error);
+        res.status(500).json({ success: false, message: "Something went wrong" });
+    }
+});
+
 module.exports = router;
