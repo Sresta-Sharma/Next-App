@@ -7,12 +7,13 @@ const pool = require("../db");
 router.post("/", protect, async (req, res) => {
     try {
         const userId = req.user.user_id;
-        const { title, content, draft_id } = req.body;
+        const { title, content, tags, draft_id } = req.body;
 
         if (!title?.trim() || !content) {
             return res.status(400).json({ error: "Title and content are required!" });
         }
 
+        const draftTags = Array.isArray(tags) ? tags : [];
         let result;
 
         if (draft_id) {
@@ -28,18 +29,18 @@ router.post("/", protect, async (req, res) => {
 
             result = await pool.query(
                 `UPDATE drafts 
-                 SET title = $1, content = $2, updated_at = CURRENT_TIMESTAMP
-                 WHERE draft_id = $3
+                 SET title = $1, content = $2, tags = $3, updated_at = CURRENT_TIMESTAMP
+                 WHERE draft_id = $4
                  RETURNING *`,
-                [title.trim(), content, draft_id]
+                [title.trim(), content, draftTags, draft_id]
             );
         } else {
             // Create new draft
             result = await pool.query(
-                `INSERT INTO drafts (user_id, title, content)
-                 VALUES ($1, $2, $3)
+                `INSERT INTO drafts (user_id, title, content, tags)
+                 VALUES ($1, $2, $3, $4)
                  RETURNING *`,
-                [userId, title.trim(), content]
+                [userId, title.trim(), content, draftTags]
             );
         }
 

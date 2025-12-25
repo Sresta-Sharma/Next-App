@@ -13,6 +13,8 @@ export default function WritePage() {
   
   const [title, setTitle] = useState("");
   const [body, setBody] = useState<SerializedEditorState | null>(null);
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
   const [publishing, setPublishing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(!!draftId);
@@ -51,6 +53,7 @@ export default function WritePage() {
 
         const draft = data.draft;
         setTitle(draft.title || "");
+        setTags(draft.tags || []);
         
         try {
           const parsedContent = JSON.parse(draft.content);
@@ -80,6 +83,7 @@ export default function WritePage() {
         const parsed = JSON.parse(draft);
         setTitle(parsed.title || "");
         setBody(parsed.body || null);
+        setTags(parsed.tags || []);
       } catch {
         localStorage.removeItem("blog_draft");
       }
@@ -87,23 +91,53 @@ export default function WritePage() {
   }, [draftId]);
   
   function isEditorEmpty(state: SerializedEditorState | null) {
-  if (!state) return true;
+    if (!state) return true;
 
-  const root = state.root as SerializedElementNode;
-  // No blocks
-  if (!root.children || root.children.length === 0) return true;
+    const root = state.root as SerializedElementNode;
+    // No blocks
+    if (!root.children || root.children.length === 0) return true;
 
-  // Only empty paragraph
-  if (
-    root.children.length === 1 &&
-    root.children[0].type === "paragraph"
-  ) {
-    const paragraph = root.children[0] as SerializedElementNode;
-    return paragraph.children.length === 0;
+    // Only empty paragraph
+    if (
+      root.children.length === 1 &&
+      root.children[0].type === "paragraph"
+    ) {
+      const paragraph = root.children[0] as SerializedElementNode;
+      return paragraph.children.length === 0;
+    }
+
+    return false;
   }
 
-  return false;
-}
+  const predefinedTags = [
+    "Tech & Coding",
+    "Life & Reflections",
+    "Productivity",
+    "Learning Journey",
+    "Creative Thoughts",
+    "Career & Growth",
+    "Experiences",
+    "Mindset",
+  ];
+
+  const handleAddTag = (tag: string) => {
+    const trimmedTag = tag.trim();
+    if (trimmedTag && !tags.includes(trimmedTag)) {
+      setTags([...tags, trimmedTag]);
+      setTagInput("");
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTags(tags.filter((tag) => tag !== tagToRemove));
+  };
+
+  const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddTag(tagInput);
+    }
+  };
   
   const handlePublish = async () => {
     if (!title.trim()) {
@@ -130,6 +164,7 @@ export default function WritePage() {
         body: JSON.stringify({
           title: title.trim(),
           content: JSON.stringify(body),
+          tags: tags,
         }),
       }
     );
@@ -146,11 +181,10 @@ export default function WritePage() {
     toast.success("Blog published successfully!");
 
     router.push(`/blogs/${data.newBlog.blog_id}`);
-
   } catch (error) {
     console.error(error);
     toast.error("Something went wrong!");
-  } finally{
+  } finally {
     setPublishing(false);
   }
   };
@@ -175,6 +209,7 @@ export default function WritePage() {
           body: JSON.stringify({
             title: title.trim() || "Untitled Draft",
             content: JSON.stringify(body),
+            tags: tags,
           }),
         }
       );
@@ -190,6 +225,7 @@ export default function WritePage() {
       localStorage.setItem("blog_draft", JSON.stringify({
         title,
         body,
+        tags,
         savedAt: new Date().toISOString(),
       }));
 
@@ -208,7 +244,7 @@ export default function WritePage() {
       <div className="max-w-4xl mx-auto px-4 max-sm:px-3">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-5xl font-bold text-black mb-8 max-sm:text-3xl max-sm:mb-6">
+          <h1 className="text-5xl font-bold text-black mb-8 max-sm:text-4xl max-sm:mb-6">
             {draftId ? "Edit Draft" : "Create a Blog"}
           </h1>
         </div>
@@ -239,6 +275,74 @@ export default function WritePage() {
                 max-sm:py-2
               "
             />
+
+            {/* Tags Section */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Tags (optional)
+              </label>
+              
+              {/* Predefined Tags */}
+              <div className="flex flex-wrap gap-2 mb-3">
+                {predefinedTags.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => handleAddTag(tag)}
+                    disabled={tags.includes(tag)}
+                    className={`
+                      text-sm px-3 py-1.5 rounded-full border transition
+                      ${
+                        tags.includes(tag)
+                          ? "bg-gray-200 text-gray-400 border-gray-300 cursor-not-allowed"
+                          : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100 cursor-pointer"
+                      }
+                    `}
+                  >
+                    {tags.includes(tag) ? "✓ " : "+ "}
+                    {tag}
+                  </button>
+                ))}
+              </div>
+
+              {/* Custom Tag Input */}
+              <input
+                type="text"
+                placeholder="Or type a custom tag and press Enter..."
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={handleTagInputKeyDown}
+                className="
+                  w-full text-sm
+                  bg-white outline-none 
+                  border border-gray-200
+                  rounded-md px-4 py-2
+                  placeholder-gray-400
+                  focus:border-gray-400 focus:ring-0
+                "
+              />
+
+              {/* Selected Tags */}
+              {tags.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-full bg-gray-900 text-white"
+                    >
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTag(tag)}
+                        className="hover:text-gray-300"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
             
             {/* Editor */}
             <BlogEditor onChange={setBody} initialState={body} />

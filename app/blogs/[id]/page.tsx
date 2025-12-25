@@ -13,6 +13,7 @@ type Blog = {
   author_name: string;
   author_id: number;
   created_at: string;
+  tags?: string[];
 };
 
 export default function BlogReadPage() {
@@ -48,6 +49,8 @@ export default function BlogReadPage() {
         const data = await res.json();
         if (!res.ok) throw new Error(data?.error || "Failed to fetch blog");
 
+        console.log("Blog data received:", data.blog);
+        console.log("Tags:", data.blog.tags);
         setBlog(data.blog);
       } catch (err) {
         console.error("Error fetching blog:", err);
@@ -93,6 +96,21 @@ export default function BlogReadPage() {
           {blog.author_name} ·{" "}
           {new Date(blog.created_at).toLocaleDateString()}
         </p>
+
+        {/* Tags */}
+        {Array.isArray(blog.tags) && blog.tags.length > 0 && (
+          <div className="mb-10 flex flex-wrap gap-2">
+            {blog.tags.map((tag) => (
+              <Link
+                key={tag}
+                href={`/tag/${tag.replace(/\s+/g, "-").toLowerCase()}`}
+                className="text-xs px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              >
+                #{tag}
+              </Link>
+            ))}
+          </div>
+        )}
 
         {/* Content */}
         <div className="prose prose-lg max-w-none">

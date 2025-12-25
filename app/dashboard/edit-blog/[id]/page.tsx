@@ -14,6 +14,8 @@ export default function EditBlogPage() {
 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState<SerializedEditorState | null>(null);
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
   const [publishing, setPublishing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -46,7 +48,11 @@ export default function EditBlogPage() {
           return;
         }
 
+        console.log("Edit blog data received:", data.blog);
+        console.log("Tags from blog:", data.blog.tags);
         setTitle(data.blog.title);
+        setTags(data.blog.tags || []);
+        console.log("Tags state set to:", data.blog.tags || []);
 
         // Parse the content if it's a JSON string
         if (typeof data.blog.content === "string") {
@@ -92,6 +98,36 @@ export default function EditBlogPage() {
     return false;
   }
 
+  const predefinedTags = [
+    "Tech & Coding",
+    "Life & Reflections",
+    "Productivity",
+    "Learning Journey",
+    "Creative Thoughts",
+    "Career & Growth",
+    "Experiences",
+    "Mindset",
+  ];
+
+  const handleAddTag = (tag: string) => {
+    const trimmedTag = tag.trim();
+    if (trimmedTag && !tags.includes(trimmedTag)) {
+      setTags([...tags, trimmedTag]);
+      setTagInput("");
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTags(tags.filter((tag) => tag !== tagToRemove));
+  };
+
+  const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddTag(tagInput);
+    }
+  };
+
   const handleUpdate = async () => {
     if (!title.trim()) {
       toast.error("Title is required!");
@@ -117,6 +153,7 @@ export default function EditBlogPage() {
           body: JSON.stringify({
             title: title.trim(),
             content: JSON.stringify(body),
+            tags: tags,
           }),
         }
       );
@@ -159,6 +196,7 @@ export default function EditBlogPage() {
           body: JSON.stringify({
             title: title.trim() || "Untitled Draft",
             content: JSON.stringify(body),
+            tags: tags,
           }),
         }
       );
@@ -174,6 +212,7 @@ export default function EditBlogPage() {
       localStorage.setItem("blog_draft", JSON.stringify({
         title,
         body,
+        tags,
         blogId,
         savedAt: new Date().toISOString(),
       }));
@@ -225,6 +264,74 @@ export default function EditBlogPage() {
             max-sm:py-2
           "
         />
+
+        {/* Tags Section */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Tags (optional)
+          </label>
+          
+          {/* Predefined Tags */}
+          <div className="flex flex-wrap gap-2 mb-3">
+            {predefinedTags.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => handleAddTag(tag)}
+                disabled={tags.includes(tag)}
+                className={`
+                  text-sm px-3 py-1.5 rounded-full border transition
+                  ${
+                    tags.includes(tag)
+                      ? "bg-gray-200 text-gray-400 border-gray-300 cursor-not-allowed"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100 cursor-pointer"
+                  }
+                `}
+              >
+                {tags.includes(tag) ? "✓ " : "+ "}
+                {tag}
+              </button>
+            ))}
+          </div>
+
+          {/* Custom Tag Input */}
+          <input
+            type="text"
+            placeholder="Or type a custom tag and press Enter..."
+            value={tagInput}
+            onChange={(e) => setTagInput(e.target.value)}
+            onKeyDown={handleTagInputKeyDown}
+            className="
+              w-full text-sm
+              bg-white outline-none 
+              border border-gray-200
+              rounded-md px-4 py-2
+              placeholder-gray-400
+              focus:border-gray-400 focus:ring-0
+            "
+          />
+
+          {/* Selected Tags */}
+          {tags.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-full bg-gray-900 text-white"
+                >
+                  {tag}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveTag(tag)}
+                    className="hover:text-gray-300"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Editor */}
         <BlogEditor onChange={setBody} initialState={body} />

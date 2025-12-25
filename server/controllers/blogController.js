@@ -10,18 +10,19 @@ const isOwnerOrAdmin = (user, ownerId) => {
 // Create a new blog post
 exports.createBlog = async (req, res) => {
     const userId = req.user.user_id;
-    const { title, content } = req.body;
+    const { title, content, tags } = req.body;
 
     if (!title?.trim() || !content) {
         return res.status(400).json({ error: "Title and content are required!" });
     }
 
     try{
+        const blogTags = Array.isArray(tags) ? tags : [];
         const result = await pool.query(
-            `INSERT INTO blogs (user_id, title, content) 
-             VALUES ($1, $2, $3)
+            `INSERT INTO blogs (user_id, title, content, tags) 
+             VALUES ($1, $2, $3, $4)
              RETURNING *`,
-            [userId, title.trim(), content]
+            [userId, title.trim(), content, blogTags]
         );
 
         const newBlog = result.rows[0];
@@ -122,7 +123,7 @@ exports.getAllBlogs = async (req, res) => {
         const total = Number(totalRes.rows[0].count);
 
         const result = await pool.query(
-            `SELECT b.blog_id, b.title, b.created_at, u.name AS author_name 
+            `SELECT b.blog_id, b.title, b.tags, b.created_at, u.name AS author_name 
              FROM blogs b
              JOIN users u ON b.user_id = u.user_id
              ORDER BY b.created_at DESC
@@ -148,7 +149,7 @@ exports.getBlogById = async (req, res) => {
 
     try{
         const result = await pool.query(
-            `SELECT b.blog_id, b.title, b.content, b.created_at, b.updated_at, u.user_id AS author_id, u.name AS author_name 
+            `SELECT b.blog_id, b.title, b.content, b.tags, b.created_at, b.updated_at, u.user_id AS author_id, u.name AS author_name 
              FROM blogs b
              JOIN users u ON b.user_id = u.user_id
              WHERE b.blog_id = $1`,
@@ -159,7 +160,12 @@ exports.getBlogById = async (req, res) => {
             return res.status(404).json({ error: "Blog not found!" });
         }
 
-        return res.json({ blog: result.rows[0] });
+        const blog = result.rows[0];
+        
+        // Ensure tags is always an array
+        blog.tags = blog.tags || [];
+
+        return res.json({ blog });
     } catch(error){
         console.error("Error fetching blog: ", error);
         return res.status(500).json({ error: "Internal Server Error!" });
@@ -169,7 +175,7 @@ exports.getBlogById = async (req, res) => {
 // Update a blog post (only by author or admin)
 exports.updateBlog = async (req, res) => {
     const blogId = req.params.id;
-    const { title, content } = req.body;
+    const { title, content, tags } = req.body;
 
     try {
         // Fetch existing blog
@@ -187,14 +193,15 @@ exports.updateBlog = async (req, res) => {
 
         const newTitle = title?.trim() || blog.title;
         const newContent = content || blog.content;
+        const newTags = tags !== undefined ? (Array.isArray(tags) ? tags : []) : blog.tags;
         
         // Update fields if provided
         const updated = await pool.query(
             `UPDATE blogs 
-             SET title = $1, content = $2, updated_at = CURRENT_TIMESTAMP
-             WHERE blog_id = $3
-             RETURNING blog_id, user_id, title, content, created_at, updated_at`,
-            [newTitle, newContent, blogId]
+             SET title = $1, content = $2, tags = $3, updated_at = CURRENT_TIMESTAMP
+             WHERE blog_id = $4
+             RETURNING blog_id, user_id, title, content, tags, created_at, updated_at`,
+            [newTitle, newContent, newTags, blogId]
         );
 
         return res.json({ message: "Blog updated", blog: updated.rows[0] });
@@ -236,7 +243,7 @@ exports.getMyBlogs = async (req, res) => {
     const userId = req.user.user_id;
     try {
         const result = await pool.query(
-            `SELECT blog_id, title, content, created_at, updated_at 
+            `SELECT blog_id, title, content, tags, created_at, updated_at 
              FROM blogs 
              WHERE user_id = $1
              ORDER BY created_at DESC`,
@@ -247,6 +254,67 @@ exports.getMyBlogs = async (req, res) => {
         console.error("Error fetching user's blogs: ", error);
         return res.status(500).json({ error: "Internal Server Error!" });
         }
+};
+
+// Get blogs by tag
+exports.getBlogsByTag = async (req, res) => {
+    const { tag } = req.params;
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.max(1, parseInt(req.query.limit) || 10);
+    const offset = (page - 1) * limit;
+
+    if (!tag) {
+        return res.status(400).json({ error: "Tag parameter is required!" });
+    }
+
+    try {
+        // Count total blogs with this tag
+        const totalRes = await pool.query(
+            "SELECT COUNT(*) FROM blogs WHERE $1 = ANY(tags)",
+            [tag]
+        );
+        const total = Number(totalRes.rows[0].count);
+
+        // Fetch blogs with this tag
+        const result = await pool.query(
+            `SELECT b.blog_id, b.title, b.tags, b.created_at, u.name AS author_name 
+             FROM blogs b
+             JOIN users u ON b.user_id = u.user_id
+             WHERE $1 = ANY(b.tags)
+             ORDER BY b.created_at DESC
+             LIMIT $2 OFFSET $3`,
+            [tag, limit, offset]
+        );
+
+        return res.json({
+            tag,
+            page,
+            limit,
+            total,
+            blogs: result.rows,
+        });
+    } catch (error) {
+        console.error("Error fetching blogs by tag: ", error);
+        return res.status(500).json({ error: "Internal Server Error!" });
+    }
+};
+
+// Get all unique tags from all blogs
+exports.getAllTags = async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT DISTINCT unnest(tags) AS tag 
+             FROM blogs 
+             WHERE tags IS NOT NULL AND array_length(tags, 1) > 0
+             ORDER BY tag`
+        );
+        
+        const tags = result.rows.map(row => row.tag);
+        return res.json({ tags });
+    } catch (error) {
+        console.error("Error fetching tags: ", error);
+        return res.status(500).json({ error: "Internal Server Error!" });
+    }
 };
 
 

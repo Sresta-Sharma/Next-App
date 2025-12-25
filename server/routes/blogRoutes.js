@@ -9,11 +9,17 @@ const {
     getBlogById,
     updateBlog,
     deleteBlog,
-    getMyBlogs
+    getMyBlogs,
+    getBlogsByTag,
+    getAllTags
 } = require("../controllers/blogController");
 
 // Public Routes
 router.get("/", getAllBlogs);
+
+router.get("/tags", getAllTags); // Get all unique tags
+
+router.get("/tag/:tag", getBlogsByTag); // Get blogs by tag
 
 router.get("/me", protect, getMyBlogs); // Protected
 
