@@ -516,3 +516,93 @@ exports.deleteAccount = async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
+
+// Google OAuth Login/Register
+exports.googleOAuth = async (req, res) => {
+  try {
+    const { email, name, oauth_id, avatar } = req.body;
+    
+    if (!email || !name || !oauth_id) {
+      return res.status(400).json({ error: "Missing required OAuth fields" });
+    }
+
+    // Check if user exists with this email or OAuth ID
+    const existingUser = await pool.query(
+      `SELECT * FROM users 
+       WHERE email = $1 OR (oauth_provider = 'google' AND oauth_id = $2)`,
+      [email, oauth_id]
+    );
+
+    let user;
+
+    if (existingUser.rows.length > 0) {
+      // User exists - update OAuth info if needed
+      user = existingUser.rows[0];
+      
+      // If user exists but doesn't have OAuth linked, link it
+      if (!user.oauth_provider || !user.oauth_id) {
+        await pool.query(
+          `UPDATE users 
+           SET oauth_provider = 'google', oauth_id = $1, avatar = $2, email_verified = true
+           WHERE user_id = $3`,
+          [oauth_id, avatar, user.user_id]
+        );
+      }
+    } else {
+      // Create new user with OAuth
+      const result = await pool.query(
+        `INSERT INTO users (name, email, oauth_provider, oauth_id, avatar, role, email_verified)
+         VALUES ($1, $2, 'google', $3, $4, 'user', true)
+         RETURNING user_id, name, email, phone, role, avatar, oauth_provider, oauth_id`,
+        [name, email, oauth_id, avatar]
+      );
+      user = result.rows[0];
+
+      // Send welcome email
+      try {
+        await sendEmail(
+          email,
+          "Welcome to Our App 🎉",
+          `<h2>Hi ${name},</h2><p>Your account has been created successfully using Google Sign-In.</p>`
+        );
+      } catch (e) {
+        console.warn("Welcome email failed:", e);
+      }
+    }
+
+    // Generate tokens
+    if (!process.env.JWT_ACCESS_SECRET || !process.env.JWT_REFRESH_SECRET) {
+      return res.status(500).json({ error: "Server misconfiguration" });
+    }
+
+    const accessToken = jwt.sign(
+      { user_id: user.user_id, email: user.email, role: user.role },
+      process.env.JWT_ACCESS_SECRET,
+      { expiresIn: ACCESS_EXPIRES }
+    );
+
+    const refreshToken = jwt.sign(
+      { user_id: user.user_id, email: user.email, role: user.role },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: REFRESH_EXPIRES }
+    );
+
+    return res.json({
+      success: true,
+      message: "OAuth login successful",
+      accessToken,
+      refreshToken,
+      user: {
+        user_id: user.user_id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone || "",
+        role: user.role,
+        avatar: user.avatar,
+      },
+    });
+  } catch (err) {
+    console.error("googleOAuth error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};

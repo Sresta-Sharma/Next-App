@@ -18,7 +18,8 @@ const { registerUser,
         requestPasswordResetOtp,
         resetPassword,
         verifyOtp,
-        refreshToken
+        refreshToken,
+        googleOAuth
      } = require("../controllers/authController");
 
 // Public:
@@ -32,6 +33,9 @@ router.post("/request-otp", requestPasswordResetOtp); // body: { email }
 
 // Verify OTP (both login & reset)
 router.post("/verify-otp", verifyOtp); // body:  {email, otp, purpose: "login"|"reset" }
+
+// Google OAuth
+router.post("/oauth/google", googleOAuth); // body: { email, name, oauth_id, avatar }
 
 // Reset password using resetToken returned by verify-otp (Authorization header: Bearer <resetToken>)
 router.post("/reset-password", resetPassword);

@@ -4,6 +4,7 @@ import "./globals.css";
 import PublicNavbar from "./components/nav/publicNavbar";
 import Footer from "./components/nav/footer";
 import { Toaster } from "react-hot-toast";
+import AuthProvider from "./components/AuthProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -24,19 +25,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} ${inter.variable} antialiased bg-[#FAFAFA] text-[#111111]`}>
-        
-        {/* 🔥 Shared Navbar (will appear on every page) */}
-        <PublicNavbar />
+        <AuthProvider>
+          {/* 🔥 Shared Navbar (will appear on every page) */}
+          <PublicNavbar />
 
-        {/* Page content */}
-        <main className="min-h-screen">
-          {children}
-          <Toaster position="top-right" />
-        </main>
+          {/* Page content */}
+          <main className="min-h-screen">
+            {children}
+            <Toaster position="top-right" />
+          </main>
 
-        {/* Footer */}
-        <Footer />
-
+          {/* Footer */}
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );

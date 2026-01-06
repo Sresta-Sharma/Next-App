@@ -18,7 +18,7 @@ type Blog = {
 
 export default function TagPage() {
   const params = useParams();
-  const slug = params.slug as string;
+  const slug = decodeURIComponent(params.slug as string);
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
@@ -75,7 +75,7 @@ export default function TagPage() {
             <div className="flex items-center gap-3 mb-4">
               <Link
                 href="/"
-                className="text-gray-500 hover:text-gray-700 transition"
+                className="text-sm text-gray-500 hover:text-gray-700 transition"
               >
                 ← Back to Home
               </Link>

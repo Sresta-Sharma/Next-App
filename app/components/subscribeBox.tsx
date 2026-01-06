@@ -54,7 +54,7 @@ export default function SubscribeForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full sm:w-auto px-4 py-2 rounded-full bg-[#111111] text-white text-sm disabled:opacity-50 hover:cursor-pointer shrink-0"
+        className="w-full sm:w-auto px-4 py-2 rounded-full bg-[#111111] text-white text-sm disabled:opacity-50 hover:opacity-95 cursor-pointer shrink-0"
       >
         {loading ? "Subscribing..." : "Subscribe"}
       </button>

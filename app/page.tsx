@@ -47,7 +47,7 @@ export default function HomePage() {
     fetchBlogs();
   }, []);
 
-  const latest = blogs.slice(0, 5); // show only latest 5
+  const latest = blogs.slice(0, 6); // show only latest 5
   
   return(
     <main className="min-h-screen bg-[#FAFAFA] text-[#111111]">
@@ -84,13 +84,13 @@ export default function HomePage() {
       {/* CONTENT WRAPPER */}
       <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-12 pb-20">
         {/* MAIN LEFT */}
-        <main className="lg:col-span-2 space-y-14">
+        <main className="lg:col-span-2">
 
          {/* LATEST POSTS FROM BACKEND */}
-          <section>
-            <h2 className="text-2xl font-semibold mb-6">Latest Posts</h2>
+          <section className="bg-white p-6 rounded-lg shadow-sm">
+            <h2 className="text-2xl font-extrabold mb-6">Latest Posts</h2>
 
-            <div className="space-y-8">
+            <div className="space-y-6">
               {loading ? (
                 <p className="text-gray-500">Loading posts...</p>
               ) : latest.length > 0 ? (
@@ -102,10 +102,10 @@ export default function HomePage() {
               )}
             </div>
 
-            <div className="mt-8 text-center">
+            <div className="mt-5 pt-6 text-center">
               <Link
                 href="/blogs"
-                className="px-5 py-2 rounded-full border border-[#1A1A1A] inline-block"
+                className="px-5 py-2 rounded-full border border-[#1A1A1A] inline-block hover:bg-gray-300 transition"
               >
                 View all posts
               </Link>
@@ -134,7 +134,7 @@ export default function HomePage() {
             <div className="mt-4">
               <Link
                 href="/about"
-                className="text-sm inline-block px-3 py-2 rounded-full border border-[#1A1A1A]"
+                className="text-sm inline-block px-3 py-2 rounded-full border border-[#1A1A1A] hover:bg-gray-300 transition"
               >
                 Read more
               </Link>
