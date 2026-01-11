@@ -210,6 +210,16 @@ export default function PublicNavbar() {
                           >
                             Manage Subscriptions
                           </button>
+
+                          <button
+                            onClick={() => {
+                              setShowUserMenu(false);
+                              router.push("/admin/messages");
+                            }}
+                            className="w-full text-left px-5 py-3 text-sm text-[#111111] hover:bg-[#F5F5F5] transition cursor-pointer"
+                          >
+                            View Messages
+                          </button>
                         </>
                       )}
 

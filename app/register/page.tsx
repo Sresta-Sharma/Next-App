@@ -2,8 +2,10 @@
 
 import { useForm, SubmitHandler } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
+import { signIn, signOut, useSession } from "next-auth/react";
+import { FcGoogle } from "react-icons/fc";
 
 type RegisterInputs = {
   name: string;
@@ -21,6 +23,7 @@ type RegisterResponse = {
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   const {
     register,
@@ -34,8 +37,66 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const password = watch("password");
+
+  // Handle OAuth success
+  useEffect(() => {
+    const oauthIntent = sessionStorage.getItem("oauthIntent");
+    
+    const handleOAuthSuccess = async () => {
+      if (status === "authenticated" && (session as any)?.isOAuth && session.user?.email && oauthIntent === "true") {
+        sessionStorage.removeItem("oauthIntent");
+        try {
+          const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
+          const response = await fetch(`${API_BASE_URL}/api/auth/oauth/google/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: session.user.email,
+              name: session.user.name,
+              oauth_id: session.user.email,
+              avatar: session.user.image,
+            }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem("accessToken", data.accessToken);
+            localStorage.setItem("refreshToken", data.refreshToken);
+            localStorage.setItem("user", JSON.stringify(data.user));
+            toast.success("Account created with Google!");
+            router.push("/");
+          } else {
+            const errorData = await response.json();
+            toast.error(errorData.error || "Registration failed");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          toast.error("Registration failed");
+        }
+      }
+    };
+
+    handleOAuthSuccess();
+  }, [status, session, router]);
+
+  const handleGoogleSignIn = async () => {
+    try {
+      setGoogleLoading(true);
+      // Set flag that user clicked Google sign-in
+      sessionStorage.setItem("oauthIntent", "true");
+      await signOut({ redirect: false });
+      // Small delay to ensure session is cleared
+      await new Promise(resolve => setTimeout(resolve, 100));
+      await signIn("google", { callbackUrl: "/register" });
+    } catch (error) {
+      console.error("Google sign-in error:", error);
+      toast.error("Failed to sign in with Google");
+      setGoogleLoading(false);
+    }
+  };
 
   const onSubmit: SubmitHandler<RegisterInputs> = async (data) => {
     if (data.password !== data.confirmPassword) {
@@ -233,6 +294,25 @@ export default function RegisterPage() {
             text-sm font-medium hover:bg-gray-100 transition disabled:opacity-50 cursor-pointer"
           >
             {loading? "Creating account..." : "Register"}
+          </button>
+
+          {/* Divider */}
+          <div className="relative flex items-center justify-center">
+            <div className="border-t border-gray-300 w-full"></div>
+            <span className="absolute bg-white px-3 text-xs text-gray-500">OR</span>
+          </div>
+
+          {/* Google Sign-In Button */}
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={googleLoading || loading}
+            className="w-full py-3 border border-gray-300 rounded-full 
+              text-sm font-medium hover:bg-gray-100 cursor-pointer transition disabled:opacity-50 
+              flex items-center justify-center gap-2"
+          >
+            <FcGoogle className="text-xl" />
+            {googleLoading ? "Signing in..." : "Continue with Google"}
           </button>
 
           {/* Login Link */}

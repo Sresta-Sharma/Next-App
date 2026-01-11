@@ -4,7 +4,7 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { signIn, useSession } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import { FcGoogle } from "react-icons/fc";
 
 type LoginInputs = {
@@ -44,42 +44,53 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  // Redirect if already authenticated via OAuth
+  // Check if OAuth was intentionally triggered
   useEffect(() => {
-    const handleOAuthSuccess = async () => {
-      if (status === "authenticated" && (session as any)?.isOAuth && session.user?.email) {
+    const oauthIntent = sessionStorage.getItem("oauthIntent");
+    
+    if (status === "authenticated" && (session as any)?.isOAuth && session.user?.email && oauthIntent === "true") {
+      sessionStorage.removeItem("oauthIntent");
+      
+      const handleOAuthSuccess = async () => {
         try {
-          // Fetch tokens from backend using the Google email
-          const response = await fetch(`${API_BASE_URL}/api/auth/oauth/google`, {
+          const response = await fetch(`${API_BASE_URL}/api/auth/oauth/google/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              email: session.user.email,
-              name: session.user.name,
-              oauth_id: session.user.email, // Use email as fallback
-              avatar: session.user.image,
+              email: session.user?.email,
+              name: session.user?.name,
+              oauth_id: session.user?.email,
+              avatar: session.user?.image,
             }),
           });
 
           if (response.ok) {
             const data = await response.json();
             
-            // Store tokens
             localStorage.setItem("accessToken", data.accessToken);
             localStorage.setItem("refreshToken", data.refreshToken);
             localStorage.setItem("user", JSON.stringify(data.user));
             
             toast.success("Logged in with Google!");
             router.push("/");
+          } else {
+            const errorData = await response.json();
+            if (errorData.needsRegistration) {
+              toast.error("Account not found. Please register first.");
+              await signOut({ redirect: false });
+              router.push("/register");
+            } else {
+              toast.error(errorData.error || "Login failed");
+            }
           }
         } catch (error) {
           console.error("Error fetching tokens:", error);
           toast.error("Login failed");
         }
-      }
-    };
+      };
 
-    handleOAuthSuccess();
+      handleOAuthSuccess();
+    }
   }, [status, session, router]);
 
   const onSubmit: SubmitHandler<LoginInputs> = async (data, event) => {
@@ -137,7 +148,7 @@ export default function LoginPage() {
         toast.success("Login successful!");
         setLoading(false);
 
-        router.push("/dashboard");
+        router.push("/");
         return;
       }
       toast.error("Unexpected response from server.");
@@ -152,18 +163,26 @@ export default function LoginPage() {
   const handleGoogleSignIn = async () => {
     try {
       setGoogleLoading(true);
-      await signIn("google", { callbackUrl: "/dashboard" });
+      // Set flag that user clicked Google login
+      sessionStorage.setItem("oauthIntent", "true");
+      // Sign out any existing NextAuth session first
+      await signOut({ redirect: false });
+      // Small delay to ensure session is cleared
+      await new Promise(resolve => setTimeout(resolve, 100));
+      // Then sign in with Google - will show account picker
+      await signIn("google", { callbackUrl: "/login" });
     } catch (error) {
       console.error("Google sign-in error:", error);
       toast.error("Failed to sign in with Google");
       setGoogleLoading(false);
+      sessionStorage.removeItem("oauthIntent");
     }
   };
 
   return (
     <div className="min-h-screen bg-white">
       <div className="min-h-screen flex items-center justify-center bg-[#fafafa] px-6 py-16 relative">
-        <div className="w-full max-w-md bg-white p-10 rounded-2xl border border-[#1A1A1A]/20 shadow-sm shadow-[#000]/10 -mt-30">
+        <div className="w-full max-w-md bg-white p-10 rounded-2xl border border-[#1A1A1A]/20 shadow-sm shadow-black/10 -mt-30">
 
           <h2 className="text-center text-2xl font-bold text-[#111] tracking-tight mb-8">
             Login
@@ -247,7 +266,7 @@ export default function LoginPage() {
               onClick={handleGoogleSignIn}
               disabled={googleLoading || loading}
               className="w-full py-3 border border-gray-300 rounded-full 
-                text-sm font-medium hover:bg-gray-50 transition disabled:opacity-50 
+                text-sm font-medium hover:bg-gray-100 cursor-pointer transition disabled:opacity-50 
                 flex items-center justify-center gap-2"
             >
               <FcGoogle className="text-xl" />
@@ -259,7 +278,12 @@ export default function LoginPage() {
               Don’t have an account?{" "}
               <span
                 className="text-[#111] font-semibold underline cursor-pointer"
-                onClick={() => router.push("/register")}
+                onClick={async () => {
+                  // Clear OAuth intent and sign out any existing session
+                  sessionStorage.removeItem("oauthIntent");
+                  await signOut({ redirect: false });
+                  router.push("/register");
+                }}
               >
                 Sign Up
               </span>

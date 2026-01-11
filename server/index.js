@@ -53,6 +53,10 @@ app.use("/api/subscribe", subscribeRoutes);
 const draftRoutes = require("./routes/draftRoutes");
 app.use("/api/drafts", draftRoutes);
 
+// Import contact routes
+const contactRoutes = require("./routes/contactRoutes");
+app.use("/api/contact", contactRoutes);
+
 // Serve uploaded images statically
 app.use("/uploads", express.static("public/uploads"));
 

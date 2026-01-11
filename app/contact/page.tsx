@@ -3,6 +3,7 @@
 import { useState } from "react";
 import * as Yup from "yup";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -15,7 +16,7 @@ export default function ContactPage() {
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [formSubmitted, setFormSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const router = useRouter();
 
@@ -82,20 +83,49 @@ export default function ContactPage() {
     try {
       await validationSchema.validate(formData, { abortEarly: false });
       setErrors({});
-      setFormSubmitted(true);
+      setSubmitting(true);
 
-      router.push("/");
+      // Submit to backend API
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/contact/submit`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success(data.message || "Message sent successfully!");
+        // Reset form
+        setFormData({
+          firstName: "",
+          lastName: "",
+          email: "",
+          phone: "",
+          countryCode: "+977",
+          message: "",
+        });
+        // Redirect after a short delay
+        setTimeout(() => {
+          router.push("/");
+        }, 1500);
+      } else {
+        toast.error(data.error || "Failed to send message");
+      }
     } catch (err: any) {
-      const newErrors: { [key: string]: string } = {};
-
       if (err.inner) {
+        const newErrors: { [key: string]: string } = {};
         err.inner.forEach((error: any) => {
           newErrors[error.path] = error.message;
         });
+        setErrors(newErrors);
+      } else {
+        toast.error("Something went wrong. Please try again.");
       }
-
-      setErrors(newErrors);
-      setFormSubmitted(false);
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -208,17 +238,12 @@ export default function ContactPage() {
             {/* Submit Button */}
             <button
               type="submit"
+              disabled={submitting}
               className="w-full py-3 border border-[#1A1A1A] rounded-full 
-              text-sm font-medium hover:bg-gray-100 transition"
+              text-sm font-medium hover:bg-gray-100 transition disabled:opacity-50 cursor-pointer"
             >
-              Submit
+              {submitting ? "Sending..." : "Submit"}
             </button>
-
-            {formSubmitted && (
-              <p className="text-center text-green-600 text-sm font-medium mt-2">
-                Thank you, {formData.firstName}! Your message has been sent.
-              </p>
-            )}
           </form>
         </div>
       </div>
