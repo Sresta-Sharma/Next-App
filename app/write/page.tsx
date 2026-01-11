@@ -1,14 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import BlogEditor from "@/app/components/editor/blogEditor";
 import toast from "react-hot-toast";
 import type { SerializedEditorState, SerializedElementNode } from "lexical";
 
-export const dynamic = 'force-dynamic';
-
-export default function WritePage() {
+function WritePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const draftId = searchParams.get("draft");
@@ -371,5 +369,17 @@ export default function WritePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function WritePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 py-10 flex items-center justify-center">
+        <p className="text-gray-500">Loading...</p>
+      </div>
+    }>
+      <WritePageContent />
+    </Suspense>
   );
 }
