@@ -6,6 +6,8 @@ import BlogEditor from "@/app/components/editor/blogEditor";
 import toast from "react-hot-toast";
 import type { SerializedEditorState, SerializedElementNode } from "lexical";
 
+export const dynamic = 'force-dynamic';
+
 export default function WritePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
