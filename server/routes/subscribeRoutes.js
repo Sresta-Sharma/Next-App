@@ -48,16 +48,12 @@ router.post("/", async (req, res) => {
 
     const sent = await sendEmail(email, "Beautiful Mess - Subscription Confirmed!", html);
 
-    if (!sent) {
-        return res.status(500).json({
-            success: false,
-            message: "Failed to send email"
-        });
-    }
-
     return res.json({
         success: true,
-        message: "Subscription email sent!"
+        message: sent
+            ? "Subscription email sent!"
+            : "Subscribed successfully, but confirmation email could not be sent right now.",
+        emailSent: sent,
     });
     } catch (error) {
         console.error("Subscribe Error:", error);
@@ -162,9 +158,15 @@ router.post("/subscribe", protect, async (req, res) => {
             <p>You will receive updates whenever new stories are posted.</p>
         `;
 
-        await sendEmail(email, "Beautiful Mess - Subscription Confirmed!", html);
+        const sent = await sendEmail(email, "Beautiful Mess - Subscription Confirmed!", html);
 
-        return res.json({ success: true, message: "Subscribed successfully!" });
+        return res.json({
+            success: true,
+            message: sent
+                ? "Subscribed successfully!"
+                : "Subscribed successfully, but confirmation email could not be sent right now.",
+            emailSent: sent,
+        });
     } catch (error) {
         console.error("Subscribe Error:", error);
         res.status(500).json({ success: false, message: "Something went wrong" });

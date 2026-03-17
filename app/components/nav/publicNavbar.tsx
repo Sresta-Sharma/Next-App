@@ -105,8 +105,8 @@ export default function PublicNavbar() {
             <Image
               src="/pic.png"
               alt="Logo"
-              width={80}
-              height={40}
+              width={150}
+              height={50}
               className="object-contain"
             />
           </Link>
